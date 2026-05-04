@@ -1,0 +1,182 @@
+export const dynamic = "force-dynamic";
+
+
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import ProductGallery from "@/components/ProductGallery";
+import RelatedProducts from "@/components/RelatedProducts";
+import ProductTabs from "@/components/ProductTabs";
+import ProductVariantsSelector from "@/components/ProductVariantsSelector";
+import { Link } from "@/i18n/routing";
+import WishlistButton from "@/components/WishlistButton";
+import { getProductDownloads } from "@/app/actions/products";
+import ProductQuoteBox from "@/components/ProductQuoteBox";
+
+
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>
+}) {
+
+  const { id, locale } = await params;
+
+  const supabase = await createClient();
+
+  const isArabic = locale === "ar";
+
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (!product || error) {
+    return notFound();
+  }
+
+  // Variants
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", id);
+
+  // Category
+  const { data: category } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("id", product.category_id)
+    .single();
+
+  // Brand
+  const { data: brand } = await supabase
+    .from("brands")
+    .select("*")
+    .eq("id", product.brand_id)
+    .single();
+
+  /* ================= LANGUAGE LOGIC ================= */
+
+  const productName = isArabic
+    ? product.name_ar || product.name_en
+    : product.name_en;
+
+  const categoryName = isArabic
+    ? category?.name_ar || category?.name_en
+    : category?.name_en;
+
+  const description = isArabic
+    ? product.description_ar || product.description_en
+    : product.description_en;
+
+  const specifications = isArabic
+    ? product.specifications_ar || product.specifications_en
+    : product.specifications_en;
+
+  const brandName = isArabic
+  ? brand?.name_ar || brand?.name
+  : brand?.name;  
+
+  const downloads = await getProductDownloads(product.id);
+
+
+  return (
+
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
+
+      {/* ================= Breadcrumb ================= */}
+      <div className="text-sm text-gray-500 mb-4 flex flex-wrap items-center">
+
+        <Link
+          href="/"
+          className="hover:text-black hover:underline transition"
+        >
+          {isArabic ? "الرئيسية" : "Home"}
+        </Link>
+
+        <span className="mx-1 text-gray-400">/</span>
+
+        <Link
+          href={`/products?category=${category?.id}`}
+          className="hover:text-black hover:underline transition"
+        >
+          {categoryName}
+        </Link>
+
+        <span className="mx-1 text-gray-400">/</span>
+
+        <span className="text-black font-medium">
+          {productName}
+        </span>
+
+      </div>
+
+      {/* ================= MAIN ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12 items-start">
+
+        {/* LEFT - Images */}
+        <ProductGallery images={product.images || []} />
+
+        {/* RIGHT - Info */}
+        <div className="space-y-4 sm:space-y-6">
+
+          {/* Brand */}
+<Link
+  href={`/products?brand=${brand?.id}`}
+  className="
+    text-sm uppercase tracking-widest 
+    text-black font-semibold 
+    underline 
+    hover:text-blue-600 transition
+  "
+>
+  {brandName}
+</Link>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-tight">
+            {productName}
+          </h1>
+
+          {/* Variants + Wishlist */}
+          <div className="mt-4 sm:mt-6 space-y-3">
+
+<ProductVariantsSelector
+  product={product}
+  variants={variants || []}
+/>
+
+<ProductQuoteBox locale={locale} />
+
+           
+
+          </div>
+
+          
+
+        </div>
+
+      </div>
+
+      {/* ================= Tabs ================= */}
+      <div className="mt-8 sm:mt-12">
+<ProductTabs
+  description={locale === "ar" ? product.description_ar : product.description_en}
+  specifications={locale === "ar" ? product.specifications_ar : product.specifications_en}
+  downloads={downloads}
+/>
+      </div>
+
+      {/* ================= Related ================= */}
+      <div className="mt-8 sm:mt-12">
+<RelatedProducts
+  categoryId={product.category_id}
+  brandId={product.brand_id}
+  currentProductId={product.id}
+  locale={locale}
+/>
+      </div>
+
+    </div>
+  );
+}

@@ -1,0 +1,486 @@
+{
+  "Index": {
+    "title": "Welcome to Diamond Tools"
+  },
+  "Auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit",
+    "individual": "Individual",
+    "company": "Company",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "city": "City",
+    "address": "Address",
+    "company_name": "Company Name",
+    "contact_person": "Contact Person",
+    "cr_number": "Commercial Registration",
+    "vat_number": "VAT Number",
+    "forgot_password": "Forgot Password?",
+    "dont_have_account": "Don't have an account?",
+    "already_have_account": "Already have an account?",
+    "reset_here": "Reset here"
+  },
+  "Header": {
+    "search": "Search tools...",
+    "noResults": "No results",
+    "quote": "Get a Quote",
+    "categories": "Categories",
+    "brands": "Brands",
+    "products": "Products",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "quoteTitle": "Request a Quote",
+    "fullName": "Full Name",
+    "company": "Company Name",
+    "phone": "Phone Number",
+    "message": "What do you need?",
+    "submit": "Submit Request",
+    "login": "Login",
+    "signOut": "Sign Out",
+    "success": "Quote request sent",
+    "error": "Something went wrong",
+    "successTitle": "Request Sent",
+    "successDesc": "We received your request and will contact you soon.","close": "Close",
+    "sending": "Sending...",
+    "wishlist":"Wishlist",
+    "account": "Account",
+    "freeShipping": "Free Shipping",
+    "topbar": {
+    "secure": "Secure online payment",
+    "delivery": "Free delivery over 200 SAR",
+    "pickup": "Collect from store"
+  }
+
+    
+
+
+  },
+
+  
+  "Hero": {
+  "since": "Since 1997",
+  "title": "Diamond Tools & Equipment Est.",
+  "description": "• Main Authorized Distributor\n• Wide Range of Products\n• Solution Provider",
+  "browse": "Browse Products",
+  "contact": "Contact Us",
+  "feature1": "Fast Delivery",
+  "feature2": "Bulk Pricing",
+  "feature3": "Trusted Brands"
+},
+"BrandsHome": {
+  "title": "Authorized Distributor of:"
+},
+"Home": {
+  "categoriesTitle": "Shop By Category",
+  "categoriesSubtitle": "Browse our industrial tools categories",
+  "featured": "Featured Products",
+  "viewAll": "View All →",
+  "contactText": "For inquiries and bulk orders, our team is ready to assist you.",
+  "contactBtn": "CONTACT US →",
+  "featurePayment": "Secure online payment",
+"featureDelivery": "Free delivery over 200 SAR",
+"featurePickup": "Collect from store",
+"bestSellers": "Best Sellers"
+},
+"Footer": {
+  "products": "Our Products",
+  "allProducts": "Products",
+  "categories": "Categories",
+  "brands": "Brands",
+  "links": "Quick Links",
+  "about": "About Us",
+  "contact": "Contact Us",
+  "address1": "Ring Rd, Alnakheel Dist.",
+  "address2": "Jeddah, Saudi Arabia",
+  "phone": "+966 54 601 0202",
+  "email": "info@diamondtools-est.com",
+  "hours": "Sat - Thu: 8am to 8pm",
+  "copyright": "© 2026 Diamond Tools & Equipment Est. All rights reserved."
+},
+"Product": {
+  "add": "Add",
+  "Add to Cart" : "Add to Cart",
+  "added": "Added to cart",
+  "addedWishlist": "Added to wishlist",
+  "removedWishlist": "Removed from wishlist",
+  "diameter": "Diameter",
+  "thickness": "Thickness",
+  "hole": "Hole Size",
+  "grit": "Grit",
+  "length": "Length",
+  "machine": "Machine",
+  "quantity": "Quantity",
+  "related": "Related Products",
+  "addWishlist": "Add to Wishlist",
+  "remove": "Remove from Wishlist",
+  "description": "Description",
+  "specifications": "Specifications",
+  "downloads": "Downloads"
+},
+"Categories": {
+  "title": "Browse Categories",
+  "subtitle": "Find tools and equipment by category",
+  "explore": "Explore Products"
+},
+"Brands": {
+  "title": "Browse Brands",
+  "subtitle": "Shop tools and equipment by brand",
+  "explore": "Explore Products"
+},
+"Products": {
+    "category": "Category",
+    "brand": "Brand",
+    "allCategories": "All Categories",
+    "allProducts": "All Products",
+    "products": "Products",
+    "noProducts": "No products found"
+},
+
+  "About": {
+    "title": "Diamond Industrial Tools Est.",
+    "p1": "Diamond Tools & Equipment Est (DIT.) has been in the trading business since 1997 playing a vital role by supplying and maintaining quality equipment to different large construction sites and factories around the kingdom.",
+    "p2": "Through the years, DIT has established long-standing relationships with international partners such as Tyrolit (Austria), Mirka (Finland), Sundisc (Netherlands), Garryson (UK), Saint-Gobain (India), and Starcke (Germany). This has strengthened its position as one of the leading authorized distributors in the Kingdom for construction and industrial sectors.",
+    "p3": "DIT strives to meet customer expectations by maintaining a wide range of tools and machines in stock, offering top-quality products recognized worldwide. Our specialized technical team in Jeddah provides after-sales services, engineering solutions, consultations, and original spare parts with professional maintenance at reasonable prices."
+  },
+    "Clients": {
+    "title": "Our Clients"
+},
+  "Suppliers": {
+    "title": "Our Suppliers"
+  },
+    "contact": {
+    "title": "Contact Us",
+    "subtitle": "We're here to help. Send us a message.",
+
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Your email",
+    "messagePlaceholder": "Your message",
+
+    "send": "Send Message",
+    "sending": "Sending...",
+    "success": "Message sent successfully",
+
+    "phone": "Phone",
+    "emailLabel": "Email",
+    "whatsapp": "WhatsApp Us",
+
+    "branches": "Our Branches"
+  },
+"Dashboard": {
+  "title": "Dashboard",
+  "passwordChanged": "Your password has been changed successfully",
+  "signOut": "Sign Out",
+
+  "accountInfo": "Account Information",
+  "editProfile": "Edit Profile",
+  "changePassword": "Change Password",
+
+  "orders": "Orders",
+  "viewAll": "View All",
+  "totalOrders": "Total Orders",
+  "order": "Order",
+
+  "status": {
+  "pending_approval": "Pending Approval",
+  "processing": "Processing",
+  "shipped": "Shipped",
+  "delivered": "Delivered",
+  "rejected": "Rejected"
+  },
+
+  "quoteRequests": "Quote Requests",
+  "quoteInfo": "You can request a quote anytime. Our team will contact you via email.",
+  "requestQuote": "Request a Quote"
+},
+"OrderDetails": {
+  "order": "Order",
+  "items": "Order Items",
+  "qty": "Qty",
+
+  "info": "Order Info",
+  "status": "Status",
+  "paymentLabel": "Payment",
+  "total": "Total",
+
+  "address": "Shipping Address",
+  "building": "Building",
+  "phone": "Phone",
+
+  "statusLabel": {
+  "pending_approval": "Pending Approval",
+  "processing": "Processing",
+  "shipped": "Shipped",
+  "delivered": "Delivered",
+  "rejected": "Rejected"
+  },
+
+  "payment": {
+    "cod": "Cash on Delivery",
+    "card": "Card",
+    "visa": "Visa",
+    "Mada": "Mada",
+    "mastercard": "Mastercard",
+    "bank_transfer": "Bank Transfer"
+  }
+},
+
+"Orders": {
+  "title": "My Orders",
+  "empty": "No orders yet",
+
+  "order": "Order",
+  "paymentLabel": "Payment",
+  "total": "Total",
+  "date": "Date",
+
+  "status": {
+  "pending_approval": "Pending Approval",
+  "processing": "Processing",
+  "shipped": "Shipped",
+  "delivered": "Delivered",
+  "rejected": "Rejected"
+  },
+
+"payment": {
+  "cod": "Cash on Delivery",
+  "card": "Card",
+  "Visa": "Visa",
+  "Mada": "Mada",
+  "mastercard": "Mastercard",
+  "bank_transfer": "Bank Transfer"
+}
+},
+"ChangePassword": {
+  "title": "Change Password",
+  "current": "Current Password",
+  "new": "New Password",
+  "confirm": "Confirm Password",
+
+  "submit": "Change Password",
+  "updating": "Updating...",
+
+  "errors": {
+    "userNotFound": "User not found",
+    "wrongPassword": "Current password is incorrect",
+    "passwordMismatch": "Passwords do not match"
+  }
+},
+"Wishlist": {
+  "title": "Wishlist",
+  "empty": "Your wishlist is empty",
+  "remove": "Remove"
+},
+"Cart": {
+  "title": "Shopping Cart",
+  "emptyTitle": "Your Cart is Empty",
+  "emptyDesc": "Looks like you haven't added any products yet",
+  "startShopping": "Start Shopping",
+
+  "remove": "Remove",
+
+  "summary": "Order Summary",
+  "subtotal": "Subtotal",
+  "vat": "VAT (15%)",
+  "shipping": "Shipping",
+  "shippingNote": "Calculated at checkout",
+  "total": "Total",
+
+  "checkout": "Proceed to Checkout",
+
+  "deliveryMethod": "Delivery method",
+"pickup": "Collect from store",
+
+  "authTitle": "Continue to Checkout",
+  "authDesc": "Login for faster checkout or continue as guest",
+  "login": "Login",
+  "guest": "Continue as Guest",
+  "cancel": "Cancel",
+
+  "delivery": "Delivery",
+  "freeDelivery": "Free",
+  "deliveryWarning": "Add {amount} SAR more to get free delivery"
+
+},
+"Checkout": {
+  "title": "Secure Checkout"
+},
+"CheckoutForm": {
+  "loading": "Loading checkout...",
+
+  "delivery": "Delivery",
+"freeDelivery": "Free",
+
+  "customer": "Customer Information",
+  "name": "Full Name",
+  "email": "Email",
+  "phone": "Phone Number",
+
+  "address": "Shipping Address",
+  "city": "City",
+  "district": "District",
+  "street": "Street",
+  "building": "Building Number",
+  "notes": "Delivery Notes (Optional)",
+
+  "deliveryMethod": "Delivery method",
+
+"pickup": "Collect from store",
+"selectBranch": "Select branch",
+"branchLocation": "Branch location",
+"pickupNote": "You will be notified when your order is ready for collection. For more information, please check the selected branch location.",
+"confirmOrder": "Confirm order",
+
+  "payment": "Payment Method",
+
+  "methods": {
+    "Visa": "Visa",
+    "MasterCard": "MasterCard",
+    "Mada": "Mada",
+    "Bank Transfer": "Bank Transfer",
+    "Pay on Pickup": "Pay when collecting"
+
+
+  },
+
+  "bankTitle": "Bank Transfer Details",
+  "bankInfo": "Bank Name: SNB\nAccount Name: DIAMOND Tools and equipment Establishment\nAccount Number: 10300000338205\nIBAN: SA4710000010300000338205",
+
+  "processing": "Processing...",
+  "placeOrder": "Place Order",
+  "pay": "Pay Now (SAR {amount})",
+
+  "summary": "Order Summary",
+  "qty": "Qty",
+  "subtotal": "Subtotal",
+  "vat": "VAT (15%)",
+  "total": "Total",
+
+  "errors": {
+  "upload": "Please upload the bank transfer receipt",
+  "branch": "Please select a branch"
+  }
+},
+"ForgotPassword": {
+  "title": "Forgot Password",
+  "placeholder": "Enter your email",
+  "submit": "Send Reset Link",
+  "sending": "Sending...",
+
+  "success": "Reset link sent to your email",
+
+  "errors": {
+    "notFound": "This email does not exist"
+  }
+},
+"PaymentCancel": {
+  "title": "Payment Cancelled",
+  "description": "You cancelled the payment",
+  "button": "Back to Cart"
+},
+"PaymentFailed": {
+  "title": "Payment Failed",
+  "description": "Your payment was not completed",
+  "button": "Try Again"
+},
+"OrderPending": {
+  "title": "Order Submitted ⏳",
+  "message1": "Your order has been received.",
+  "message2": "Once your payment is confirmed, we will send the invoice to your email.",
+  "button": "Back to Home"
+},
+
+
+
+
+"PaymentSuccess": {
+  "loading": "Verifying payment...",
+
+  "failedTitle": "Payment Failed ❌",
+  "failedDesc": "Your payment was not completed. Please try again.",
+  "backToCart": "Back to Cart",
+
+  "pickupSuccessTitle": "Payment successful - Pickup order confirmed",
+"pickupSuccessDesc": "Your order has been confirmed for store collection.",
+"pickupNote": "You will be notified when your order is ready to be collected.",
+"pickupBranch": "Pickup branch",
+"openLocation": "Open location",
+"whatsappBranch": "Contact branch on WhatsApp",
+
+  "successTitle": "Payment Successful ✅",
+  "successDesc": "Your order has been received successfully. A confirmation and invoice will be sent to your email.",
+
+  "orderId": "Order ID",
+  "paymentStatus": "Payment Status",
+  "orderStatus": "Order Status",
+
+  "items": "Items",
+  "total": "Total"
+},
+
+
+
+
+"PaymentPage": {
+  "title": "Secure Payment",
+  "description": "Diamond Tools Order"
+},
+
+
+
+
+
+"ResetPassword": {
+  "title": "Reset Password",
+  "new": "New Password",
+  "confirm": "Confirm Password",
+
+  "submit": "Update Password",
+  "updating": "Updating...",
+
+  "errors": {
+    "mismatch": "Passwords do not match"
+  }
+},
+
+
+
+
+
+"VerifyEmail": {
+  "title": "Verify your email",
+  "message": "We sent you an email. Please verify your account to continue.",
+  "note": "After verification you will be redirected automatically."
+},
+
+
+"Branches": {
+  "tel": "Tel",
+  "location": "Location",
+  "whatsapp": "WhatsApp",
+  "openingHours": "Opening hours"
+},
+
+
+"PickupSuccess": {
+  "loading": "Loading...",
+  "successTitle": "Order confirmed successfully",
+  "successDesc": "Your order has been placed for pickup.",
+  "pickupNote": "You will be notified when your order is ready to be collected.",
+  "branch": "Pickup branch",
+  "orderId": "Order ID",
+  "status": "Order status",
+  "items": "Items",
+  "total": "Total",
+  "whatsappBranch": "Contact branch on WhatsApp",
+  "openLocation": "Open location"
+}
+}
+
+

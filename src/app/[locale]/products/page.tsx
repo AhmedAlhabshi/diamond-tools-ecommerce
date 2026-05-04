@@ -1,0 +1,194 @@
+import { getProducts, getCategories, getBrands } from '@/app/actions/products'
+import { getTranslations } from 'next-intl/server'
+import { PackageSearch } from 'lucide-react'
+import { Link } from '@/i18n/routing'
+import AddToCartButton from '@/components/AddToCartButton'
+import { createClient } from "@/utils/supabase/server"
+import ProductPrice from "@/components/product-price"
+import ProductsClient from "@/components/ProductsClient"
+
+export default async function ProductsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ category?: string, brand?: string, price?: string, search?: string }>
+}) {
+
+  const { locale } = await params
+  const { category, brand, price, search } = await searchParams
+
+  const t = await getTranslations("Products") // ✅ NEW
+
+  const [products, categories, brands] = await Promise.all([
+    getProducts({ categoryId: category, brandId: brand, price, search }),
+    getCategories(),
+    getBrands(),
+  ])
+
+  const selectedCategory = categories.find(
+    (cat:any) => String(cat.id) === String(category)
+  )
+
+  const selectedBrand = brands.find(
+    (b:any) => String(b.id) === String(brand)
+  )
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  /* 🔥 SIDEBAR */
+  const sidebar = (
+    <div className="space-y-6">
+
+      {/* Category */}
+      <div className="bg-white p-5 rounded-xl border">
+        
+        <h3 className="text-xl md:text-lg font-bold mb-4">
+          {t("category")}
+        </h3>
+
+        <ul className="space-y-2">
+          <li>
+            <Link href="/products" className="block">
+              {t("allCategories")}
+            </Link>
+          </li>
+
+          {categories.map((cat:any) => (
+            <li key={cat.id}>
+              <Link href={`/products?category=${cat.id}`}>
+                {locale === 'ar' ? cat.name_ar : cat.name_en}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Brand */}
+      <div className="bg-white p-5 rounded-xl border">
+        
+        <h3 className="text-xl md:text-lg font-bold mb-4">
+          {t("brand")}
+        </h3>
+
+        <ul className="space-y-2">
+          {brands.map((b:any) => (
+            <li key={b.id}>
+              <Link href={`/products?brand=${b.id}`}>
+                {b.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+    </div>
+  )
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+
+        {/* DESKTOP SIDEBAR */}
+        <div className="hidden md:block w-64 shrink-0">
+          {sidebar}
+        </div>
+
+        {/* PRODUCTS */}
+        <div className="flex-1">
+
+          {/* MOBILE FILTER */}
+          <ProductsClient sidebar={sidebar} />
+
+          {/* HEADER */}
+          <div className="mb-4 md:mb-6 flex justify-between items-center">
+
+            <h1 className="text-xl md:text-3xl ">
+              {selectedCategory
+                ? (locale === 'ar'
+                    ? selectedCategory.name_ar
+                    : selectedCategory.name_en)
+                : selectedBrand
+                ? selectedBrand.name
+                : t("allProducts")} {/* ✅ */}
+            </h1>
+
+            <span className="text-gray-500 text-sm">
+              {products.length} {t("products")} {/* ✅ */}
+            </span>
+
+          </div>
+
+          {/* PRODUCTS GRID */}
+          {products.length === 0 ? (
+
+            <div className="text-center py-16">
+              <PackageSearch className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              {t("noProducts")} {/* ✅ */}
+            </div>
+
+          ) : (
+
+            <div className="
+              grid 
+              grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
+              gap-3 sm:gap-4 md:gap-6
+            ">
+
+              {products.map((product: any) => (
+
+                <div
+                  key={product.id}
+                  className="bg-white border rounded-xl p-3 sm:p-4"
+                >
+
+                  <Link href={`/products/${product.id}`}>
+
+                    <div className="aspect-square flex items-center justify-center mb-3 p-2">
+
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <PackageSearch />
+                      )}
+
+                    </div>
+
+                    <h3 className="text-sm sm:text-base mb-2 line-clamp-2 text-center w-full">
+                      {locale === 'ar' ? product.name_ar : product.name_en}
+                    </h3>
+
+                  </Link>
+
+                  <ProductPrice
+                    product={product}
+                    variant={product.variant}
+                  />
+
+                  {user && (
+                    <AddToCartButton product={product} />
+                  )}
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}

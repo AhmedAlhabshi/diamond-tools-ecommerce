@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-inter), var(--font-arabic), "sans-serif";
+  --color-brand-blue: #0A2540;
+  --color-brand-gray: #4A5568;
+}
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
