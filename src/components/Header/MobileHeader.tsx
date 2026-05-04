@@ -11,6 +11,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher"
 import { useCart } from "@/store/useCart"
 import { toast } from "sonner"
 import { createClient } from "@/utils/supabase/client"
+import { usePathname } from "@/i18n/routing"
 
 export default function MobileHeader() {
 
@@ -18,6 +19,7 @@ export default function MobileHeader() {
   const t = useTranslations("Header")
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   const [search, setSearch] = useState("")
   const [results, setResults] = useState<any[]>([])
@@ -108,6 +110,30 @@ useEffect(() => {
     window.removeEventListener("focus", loadUser)
   }
 }, [])
+
+useEffect(() => {
+  const supabase = createClient()
+
+  const loadUser = async () => {
+    const { data } = await supabase.auth.getUser()
+    setUser(data.user)
+  }
+
+  loadUser()
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null)
+  })
+
+  window.addEventListener("focus", loadUser)
+
+  return () => {
+    subscription.unsubscribe()
+    window.removeEventListener("focus", loadUser)
+  }
+}, [pathname])
 
   return (
     <header className="bg-white shadow-sm relative z-50">
@@ -231,7 +257,7 @@ useEffect(() => {
   </Link>
 
   {user && (
-  <Link href={{ pathname: "/dashboard" }}>
+  <Link href={{ pathname: "/dashboard" }} onClick={() => setMenuOpen(false)} >
     {t("dashboard")}
   </Link>
 )}

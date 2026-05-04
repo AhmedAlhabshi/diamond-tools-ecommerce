@@ -26,8 +26,7 @@ function handleSubmit(formData: FormData) {
       return
     }
 
-    router.refresh()
-    router.push('/')
+window.location.href = `/${locale}`
   })
 }
 
