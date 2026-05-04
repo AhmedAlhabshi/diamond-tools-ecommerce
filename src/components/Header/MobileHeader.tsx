@@ -230,6 +230,12 @@ useEffect(() => {
     {t("contact")}
   </Link>
 
+  {user && (
+  <Link href={{ pathname: "/dashboard" }}>
+    {t("dashboard")}
+  </Link>
+)}
+
   <hr />
 
   <LanguageSwitcher />

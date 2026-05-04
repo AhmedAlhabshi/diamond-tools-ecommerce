@@ -4,25 +4,34 @@ import { useTranslations, useLocale } from 'next-intl'
 import { login } from '@/app/actions/auth'
 import { useState, useTransition } from 'react'
 import { Link } from '@/i18n/routing'
+import { useRouter } from '@/i18n/routing'
 
 export default function LoginPage() {
 
   const t = useTranslations('Auth')
   const locale = useLocale()
+  const router = useRouter()
 
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function handleSubmit(formData: FormData) {
-    setError(null)
+function handleSubmit(formData: FormData) {
+  setError(null)
 
-    startTransition(async () => {
-      const res = await login(formData)
-      if (res?.error) {
-        setError(res.error)
-      }
-    })
-  }
+  startTransition(async () => {
+    const res = await login(formData)
+
+    if (res?.error) {
+      setError(res.error)
+      return
+    }
+
+    router.refresh()
+    router.push('/')
+  })
+}
+
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 py-12 px-4">
