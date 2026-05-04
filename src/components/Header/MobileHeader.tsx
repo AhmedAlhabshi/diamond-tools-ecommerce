@@ -120,7 +120,7 @@ useEffect(() => {
         </button>
 
         <Link href="/" locale={locale}>
-          <Image src="/logo1.png" alt="logo" width={200} height={80} className="h-10 w-auto" />
+          <Image src="/logo11.png" alt="logo" width={200} height={80} className="h-10 w-auto" />
         </Link>
 
         <div className="flex items-center gap-3">
