@@ -48,6 +48,8 @@ export default function AddToCartButton({
         grit: variantToUse.grit,
         length: variantToUse.length,
         machine: variantToUse.machine,
+        material_name_en: variant?.material_name_en,
+material_name_ar: variant?.material_name_ar,
       })
 
       toast.success(t("added"), { duration: 500 })

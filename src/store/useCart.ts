@@ -19,6 +19,9 @@ export interface CartItem {
   grit?: string
   length?: string
   machine?: string;
+  material_name_en?: string
+  material_name_ar?: string
+  
 }
 
 interface CartState {

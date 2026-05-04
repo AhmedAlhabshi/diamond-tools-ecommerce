@@ -16,6 +16,11 @@ export default function ProductVariantsPage() {
   const [thickness, setThickness] = useState("")
   const [length, setLength] = useState("")
   const [machine, setMachine] = useState("")
+  const [materialNameEn, setMaterialNameEn] = useState("")
+  const [materialNameAr, setMaterialNameAr] = useState("")
+  const [materialIconFile, setMaterialIconFile] = useState<File | null>(null)
+  const [materialIconUrl, setMaterialIconUrl] = useState("")
+  const [removeMaterialIcon, setRemoveMaterialIcon] = useState(false)
   const [descriptionEn, setDescriptionEn] = useState("")
   const [descriptionAr, setDescriptionAr] = useState("")
   const [price, setPrice] = useState("")
@@ -24,8 +29,6 @@ export default function ProductVariantsPage() {
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [iconFile, setIconFile] = useState<File | null>(null)
-const [iconUrl, setIconUrl] = useState("")
 
   const resetForm = () => {
     setDiameter("")
@@ -34,6 +37,11 @@ const [iconUrl, setIconUrl] = useState("")
     setThickness("")
     setLength("")
     setMachine("")
+    setMaterialNameEn("")
+    setMaterialNameAr("")
+    setMaterialIconFile(null)
+    setMaterialIconUrl("")
+    setRemoveMaterialIcon(false)
     setDescriptionEn("")
     setDescriptionAr("")
     setPrice("")
@@ -72,48 +80,52 @@ const [iconUrl, setIconUrl] = useState("")
 
     setLoading(true)
 
-    let finalIconUrl = iconUrl
+    let finalMaterialIconUrl = removeMaterialIcon ? "" : materialIconUrl
 
-if (iconFile) {
-  const fileExt = iconFile.name.split(".").pop()
-  const fileName = `variant-icons/${crypto.randomUUID()}.${fileExt}`
+    if (materialIconFile) {
+      const fileExt = materialIconFile.name.split(".").pop()
+      const fileName = `variant-material-icons/${crypto.randomUUID()}.${fileExt}`
 
-  const { error: uploadError } = await supabase.storage
-    .from("products")
-    .upload(fileName, iconFile)
+      const { error: uploadError } = await supabase.storage
+        .from("products")
+        .upload(fileName, materialIconFile)
 
-  if (uploadError) {
-    console.error(uploadError)
-    alert("Error uploading icon")
-    setLoading(false)
-    return
-  }
+      if (uploadError) {
+        console.error(uploadError)
+        alert("Error uploading material icon")
+        setLoading(false)
+        return
+      }
 
-  const { data } = supabase.storage
-    .from("products")
-    .getPublicUrl(fileName)
+      const { data } = supabase.storage
+        .from("products")
+        .getPublicUrl(fileName)
 
-  finalIconUrl = data.publicUrl
-}
+      finalMaterialIconUrl = data.publicUrl
+    }
+
+    const payload = {
+      diameter,
+      hole_size: holeSize,
+      grit,
+      thickness,
+      length,
+      machine,
+      material_name_en: materialNameEn,
+      material_name_ar: materialNameAr,
+      material_icon_url: finalMaterialIconUrl,
+      description_en: descriptionEn,
+      description_ar: descriptionAr,
+      price: Number(price),
+      stock: stock ? Number(stock) : 0,
+    }
 
     let error
 
     if (editingId) {
       const res = await supabase
         .from("product_variants")
-        .update({
-          diameter,
-          hole_size: holeSize,
-          grit,
-          thickness,
-          length,
-          machine,
-          description_en: descriptionEn,
-          description_ar: descriptionAr,
-          price: Number(price),
-          stock: stock ? Number(stock) : 0,
-          icon_url: finalIconUrl,
-        })
+        .update(payload)
         .eq("id", editingId)
 
       error = res.error
@@ -122,17 +134,7 @@ if (iconFile) {
         .from("product_variants")
         .insert({
           product_id: productId,
-          diameter,
-          hole_size: holeSize,
-          grit,
-          thickness,
-          length,
-          machine,
-          description_en: descriptionEn,
-          description_ar: descriptionAr,
-          price: Number(price),
-          stock: stock ? Number(stock) : 0,
-          icon_url: finalIconUrl,
+          ...payload,
         })
 
       error = res.error
@@ -170,19 +172,23 @@ if (iconFile) {
     await fetchVariants()
   }
 
+  const clearMaterial = () => {
+    setMaterialNameEn("")
+    setMaterialNameAr("")
+    setMaterialIconFile(null)
+    setMaterialIconUrl("")
+    setRemoveMaterialIcon(true)
+  }
+
   return (
     <div className="p-8 bg-slate-50 min-h-screen">
-
-      <h1 className="text-2xl font-bold mb-6">
-        Manage Variants
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">Manage Variants</h1>
 
       <p className="text-sm text-gray-500 mb-6">
         Product ID: {productId}
       </p>
 
       <div className="bg-white p-6 rounded-lg shadow max-w-xl space-y-4">
-
         <h2 className="text-lg font-semibold">
           {editingId ? "Edit Variant" : "Add Variant"}
         </h2>
@@ -229,31 +235,73 @@ if (iconFile) {
           className="w-full border p-2 rounded"
         />
 
-        <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Variant Icon
-  </label>
+        <div className="border rounded-lg p-4 space-y-3 bg-slate-50">
+          <h3 className="font-semibold text-slate-800">Material</h3>
 
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-      setIconFile(file)
-      setIconUrl(URL.createObjectURL(file))
-    }}
-    className="w-full border p-2 rounded"
-  />
+          <input
+            placeholder="Material Name English (e.g. Steel / 2in1 / Premium)"
+            value={materialNameEn}
+            onChange={(e) => setMaterialNameEn(e.target.value)}
+            className="w-full border p-2 rounded bg-white"
+          />
 
-  {iconUrl && (
-    <img
-      src={iconUrl}
-      alt="Variant icon"
-      className="w-12 h-12 object-contain mt-3 border rounded p-1"
-    />
-  )}
-</div>
+          <input
+            placeholder="Material Name Arabic (e.g. فولاذ / ٢ في ١ / ممتاز)"
+            value={materialNameAr}
+            onChange={(e) => setMaterialNameAr(e.target.value)}
+            className="w-full border p-2 rounded bg-white text-right"
+            dir="rtl"
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Material Icon
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setMaterialIconFile(file)
+                setMaterialIconUrl(URL.createObjectURL(file))
+                setRemoveMaterialIcon(false)
+              }}
+              className="w-full border p-2 rounded bg-white"
+            />
+
+            {materialIconUrl && !removeMaterialIcon && (
+              <div className="mt-3 flex items-center gap-3">
+                <img
+                  src={materialIconUrl}
+                  alt="Material icon"
+                  className="w-12 h-12 object-contain border rounded p-1 bg-white"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMaterialIconFile(null)
+                    setMaterialIconUrl("")
+                    setRemoveMaterialIcon(true)
+                  }}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Delete Icon
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={clearMaterial}
+            className="text-sm bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Clear Material
+          </button>
+        </div>
 
         <textarea
           placeholder="Variant Description English"
@@ -307,21 +355,18 @@ if (iconFile) {
             </button>
           )}
         </div>
-
       </div>
 
       <div className="mt-10">
-
         <h2 className="text-lg font-semibold mb-4">
           Variants List ({variants.length})
         </h2>
 
         <div className="bg-white rounded-lg shadow overflow-x-auto">
-
           <table className="w-full text-sm">
-
             <thead className="bg-gray-100">
               <tr>
+                <th className="p-3 text-left">Material</th>
                 <th className="p-3 text-left">Diameter</th>
                 <th className="p-3 text-left">Hole Size</th>
                 <th className="p-3 text-left">Grit</th>
@@ -333,25 +378,35 @@ if (iconFile) {
                 <th className="p-3 text-left">Price</th>
                 <th className="p-3 text-left">Stock</th>
                 <th className="p-3 text-left">Actions</th>
-                <th className="p-3 text-left">Icon</th>
               </tr>
             </thead>
 
             <tbody>
-
               {variants.map((v) => (
                 <tr key={v.id} className="border-t">
                   <td className="p-3">
-  {v.icon_url ? (
-    <img
-      src={v.icon_url}
-      alt="Variant icon"
-      className="w-8 h-8 object-contain"
-    />
-  ) : (
-    "-"
-  )}
-</td>
+                    {(v.material_name_en || v.material_icon_url) ? (
+                      <div className="flex items-center gap-2">
+                        {v.material_icon_url && (
+                          <img
+                            src={v.material_icon_url}
+                            alt="Material icon"
+                            className="w-8 h-8 object-contain"
+                          />
+                        )}
+
+                        <div>
+                          <div>{v.material_name_en || "-"}</div>
+                          <div className="text-xs text-gray-500" dir="rtl">
+                            {v.material_name_ar || ""}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+
                   <td className="p-3">{v.diameter || "-"}</td>
                   <td className="p-3">{v.hole_size || "-"}</td>
                   <td className="p-3">{v.grit || "-"}</td>
@@ -373,12 +428,15 @@ if (iconFile) {
                         setThickness(v.thickness || "")
                         setLength(v.length || "")
                         setMachine(v.machine || "")
+                        setMaterialNameEn(v.material_name_en || "")
+                        setMaterialNameAr(v.material_name_ar || "")
+                        setMaterialIconUrl(v.material_icon_url || "")
+                        setMaterialIconFile(null)
+                        setRemoveMaterialIcon(false)
                         setDescriptionEn(v.description_en || "")
                         setDescriptionAr(v.description_ar || "")
                         setPrice(String(v.price || ""))
                         setStock(String(v.stock || ""))
-                        setIconUrl(v.icon_url || "")
-                        setIconFile(null)
                       }}
                       className="text-blue-600 hover:underline mr-3"
                     >
@@ -397,20 +455,15 @@ if (iconFile) {
 
               {variants.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="p-4 text-center text-gray-500">
+                  <td colSpan={12} className="p-4 text-center text-gray-500">
                     No variants yet
                   </td>
                 </tr>
               )}
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
-
     </div>
   )
 }

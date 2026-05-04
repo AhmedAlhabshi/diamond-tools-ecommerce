@@ -95,24 +95,23 @@ export default function CartPage() {
 {/* Variant details */}
 {item.variant_id !== "default" && (
   <div className="mt-1 text-xs text-slate-500 space-y-0.5">
-    {item.diameter && (
-      <p>Diameter: {item.diameter}</p>
+
+    {item.material_name_en && (
+      <p>
+        Material:{" "}
+        {locale === "ar"
+          ? item.material_name_ar || item.material_name_en
+          : item.material_name_en}
+      </p>
     )}
 
-    {item.thickness && (
-      <p>Thickness: {item.thickness}</p>
-    )}
-
-    {item.hole_size && (
-      <p>Hole Size: {item.hole_size}</p>
-    )}
-
-    {item.grit && (
-      <p>Grit: {item.grit}</p>
-    )}
+    {item.diameter && <p>Diameter: {item.diameter}</p>}
+    {item.thickness && <p>Thickness: {item.thickness}</p>}
+    {item.hole_size && <p>Hole Size: {item.hole_size}</p>}
+    {item.grit && <p>Grit: {item.grit}</p>}
     {item.length && <p>Length: {item.length}</p>}
-    
     {item.machine && <p>Machine: {item.machine}</p>}
+
   </div>
 )}
 

@@ -9,40 +9,73 @@ export default function ProductVariantsSelector({ product, variants }: any) {
   const locale = useLocale();
   const isArabic = locale === "ar";
 
-  // ✅ STATES
   const [selectedDiameter, setSelectedDiameter] = useState<string | null>(null);
   const [selectedHole, setSelectedHole] = useState<string | null>(null);
   const [selectedGrit, setSelectedGrit] = useState<string | null>(null);
   const [selectedThickness, setSelectedThickness] = useState<string | null>(null);
   const [selectedLength, setSelectedLength] = useState<string | null>(null);
   const [selectedMachine, setSelectedMachine] = useState<string | null>(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
 
-  // 🔥 helper: remove null / empty / undefined
-  const cleanOptions = (field: string) => {
+  const cleanOptions = (field: string): string[] => {
     return [
       ...new Set(
         variants
           .map((v: any) => v[field])
-          .filter(
-            (value: any) =>
-              value !== null &&
-              value !== undefined &&
-              value !== ""
-          )
+          .filter((value: any) => value !== null && value !== undefined && value !== "")
           .map((value: any) => String(value))
       ),
     ];
   };
 
-  // 🔥 OPTIONS
-  const allDiameters = cleanOptions("diameter");
-  const allThickness = cleanOptions("thickness");
-  const allHoles = cleanOptions("hole_size");
-  const allGrits = cleanOptions("grit");
-  const allLengths = cleanOptions("length");
-  const allMachines = cleanOptions("machine");
+const getMaterialKey = (v: any) => {
+  return String(v.material_name_en || v.material_name_ar || "")
+    .trim()
+    .toLowerCase();
+};
 
-  // ✅ CHECK HOW MANY OPTION GROUPS HAVE MORE THAN ONE OPTION
+const allMaterials = useMemo(() => {
+  const map = new Map<string, any>();
+
+  variants.forEach((v: any) => {
+    if (!v.material_icon_url) return;
+
+    const key = getMaterialKey(v);
+
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        name_en: v.material_name_en || "",
+        name_ar: v.material_name_ar || "",
+        icon_url: v.material_icon_url || "",
+      });
+    }
+  });
+
+  return Array.from(map.values());
+}, [variants]);
+
+
+  const sortOptions = (options: string[]) => {
+  return [...options].sort((a, b) => {
+    const numA = parseFloat(a.replace(/[^\d.]/g, ""))
+    const numB = parseFloat(b.replace(/[^\d.]/g, ""))
+
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB
+    }
+
+    return a.localeCompare(b)
+  })
+}
+
+const allDiameters = sortOptions(cleanOptions("diameter"));
+const allThickness = sortOptions(cleanOptions("thickness"));
+const allHoles = sortOptions(cleanOptions("hole_size"));
+const allGrits = sortOptions(cleanOptions("grit"));
+const allLengths = sortOptions(cleanOptions("length"));
+const allMachines = sortOptions(cleanOptions("machine"));
+
   const activeOptionGroups = [
     allDiameters.length > 1,
     allThickness.length > 1,
@@ -50,11 +83,11 @@ export default function ProductVariantsSelector({ product, variants }: any) {
     allGrits.length > 1,
     allLengths.length > 1,
     allMachines.length > 1,
+    allMaterials.length > 1,
   ].filter(Boolean).length;
 
   const shouldFilterOptions = activeOptionGroups > 1;
 
-  // 🔥 FILTER
   const filteredVariants = useMemo(() => {
     return variants.filter(
       (v: any) =>
@@ -63,7 +96,8 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         (!selectedGrit || String(v.grit) === String(selectedGrit)) &&
         (!selectedThickness || String(v.thickness) === String(selectedThickness)) &&
         (!selectedLength || String(v.length) === String(selectedLength)) &&
-        (!selectedMachine || String(v.machine) === String(selectedMachine))
+        (!selectedMachine || String(v.machine) === String(selectedMachine)) &&
+        (!selectedMaterial || getMaterialKey(v) === selectedMaterial)
     );
   }, [
     variants,
@@ -73,27 +107,31 @@ export default function ProductVariantsSelector({ product, variants }: any) {
     selectedThickness,
     selectedLength,
     selectedMachine,
+    selectedMaterial,
   ]);
 
-  const cleanAvailable = (field: string) => {
-    if (!shouldFilterOptions) {
-      return new Set(cleanOptions(field));
-    }
+  const cleanAvailable = (field: string): Set<string> => {
+    if (!shouldFilterOptions) return new Set(cleanOptions(field));
 
     return new Set(
       filteredVariants
         .map((v: any) => v[field])
-        .filter(
-          (value: any) =>
-            value !== null &&
-            value !== undefined &&
-            value !== ""
-        )
+        .filter((value: any) => value !== null && value !== undefined && value !== "")
         .map((value: any) => String(value))
     );
   };
 
-  // 🔥 AVAILABLE
+  const availableMaterials = useMemo(() => {
+    const set = new Set<string>();
+
+    filteredVariants.forEach((v: any) => {
+      if (!v.material_name_en && !v.material_name_ar && !v.material_icon_url) return;
+      set.add(getMaterialKey(v));
+    });
+
+    return set;
+  }, [filteredVariants]);
+
   const availableDiameters = cleanAvailable("diameter");
   const availableThickness = cleanAvailable("thickness");
   const availableHoles = cleanAvailable("hole_size");
@@ -101,32 +139,30 @@ export default function ProductVariantsSelector({ product, variants }: any) {
   const availableLengths = cleanAvailable("length");
   const availableMachines = cleanAvailable("machine");
 
-  // 🔥 SELECTED VARIANT
   const selectedVariant = useMemo(() => {
-    return filteredVariants.length === 1 ? filteredVariants[0] : null;
+    if (!filteredVariants?.length) return null;
+
+    return [...filteredVariants].sort(
+      (a: any, b: any) => Number(a.price) - Number(b.price)
+    )[0];
   }, [filteredVariants]);
 
-  // 🔥 DEFAULT VARIANT = lowest price
   const defaultVariant = useMemo(() => {
     if (!variants?.length) return null;
 
-    return [...variants].sort((a: any, b: any) => a.price - b.price)[0];
+    return [...variants].sort(
+      (a: any, b: any) => Number(a.price) - Number(b.price)
+    )[0];
   }, [variants]);
 
-  // 🔥 FINAL VARIANT
   const finalVariant = selectedVariant || defaultVariant;
 
-  // 🔥 PRICE LOGIC
-  const displayPrice = finalVariant?.price ?? product?.individual_price ?? 0;
-
-  // 🔥 VARIANT DESCRIPTION
   const variantDescription = finalVariant
     ? isArabic
       ? finalVariant.description_ar || finalVariant.description_en
       : finalVariant.description_en
     : null;
 
-  // 🔘 OPTION BUTTON
   const OptionButton = ({ value, selected, available, onClick }: any) => (
     <button
       onClick={onClick}
@@ -144,25 +180,18 @@ export default function ProductVariantsSelector({ product, variants }: any) {
 
   return (
     <div className="space-y-6">
-
-      {/* Diameter */}
       {allDiameters.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("diameter")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("diameter")}</h3>
           <div className="flex flex-wrap gap-2">
             {allDiameters.map((d) => (
               <OptionButton
                 key={d}
                 value={d}
                 selected={selectedDiameter === d}
-                available={availableDiameters.has(d)}
+                available={availableDiameters.has(String(d))}
                 onClick={() =>
-                  setSelectedDiameter(
-                    String(d) === String(selectedDiameter) ? null : String(d)
-                  )
+                  setSelectedDiameter(String(d) === String(selectedDiameter) ? null : String(d))
                 }
               />
             ))}
@@ -170,26 +199,18 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* Thickness */}
       {allThickness.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("thickness")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("thickness")}</h3>
           <div className="flex flex-wrap gap-2">
             {allThickness.map((tVal) => (
               <OptionButton
                 key={tVal}
                 value={tVal}
                 selected={selectedThickness === tVal}
-                available={availableThickness.has(tVal)}
+                available={availableThickness.has(String(tVal))}
                 onClick={() =>
-                  setSelectedThickness(
-                    String(tVal) === String(selectedThickness)
-                      ? null
-                      : String(tVal)
-                  )
+                  setSelectedThickness(String(tVal) === String(selectedThickness) ? null : String(tVal))
                 }
               />
             ))}
@@ -197,24 +218,61 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* Length */}
+{allMaterials.length > 1 && (
+  <div>
+    <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+      {isArabic ? "المادة" : "Material"}
+    </h3>
+
+    <div className="flex flex-wrap gap-4 items-center">
+      {allMaterials.map((material: any) => {
+        const selected = selectedMaterial === material.key;
+        const available = availableMaterials.has(material.key);
+
+        return (
+          <button
+            key={material.key}
+            onClick={() =>
+              setSelectedMaterial(selected ? null : material.key)
+            }
+            disabled={!available}
+            className={`
+              relative flex items-center justify-center
+              ${!available ? "opacity-30 cursor-not-allowed" : ""}
+            `}
+          >
+            <img
+              src={material.icon_url}
+              alt="material"
+              className={`
+                w-15 h-15 object-contain transition
+                ${selected ? "scale-110" : "hover:scale-105"}
+              `}
+            />
+
+            {/* Selected ring */}
+            {selected && (
+              <span className="absolute inset-0 rounded-full border-2 border-blue-600"></span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
       {allLengths.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("length")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("length")}</h3>
           <div className="flex flex-wrap gap-2">
             {allLengths.map((l) => (
               <OptionButton
                 key={l}
                 value={l}
                 selected={selectedLength === l}
-                available={availableLengths.has(l)}
+                available={availableLengths.has(String(l))}
                 onClick={() =>
-                  setSelectedLength(
-                    String(l) === String(selectedLength) ? null : String(l)
-                  )
+                  setSelectedLength(String(l) === String(selectedLength) ? null : String(l))
                 }
               />
             ))}
@@ -222,24 +280,18 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* Hole Size */}
       {allHoles.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("hole")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("hole")}</h3>
           <div className="flex flex-wrap gap-2">
             {allHoles.map((h) => (
               <OptionButton
                 key={h}
                 value={h}
                 selected={selectedHole === h}
-                available={availableHoles.has(h)}
+                available={availableHoles.has(String(h))}
                 onClick={() =>
-                  setSelectedHole(
-                    String(h) === String(selectedHole) ? null : String(h)
-                  )
+                  setSelectedHole(String(h) === String(selectedHole) ? null : String(h))
                 }
               />
             ))}
@@ -247,24 +299,18 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* Grit */}
       {allGrits.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("grit")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("grit")}</h3>
           <div className="flex flex-wrap gap-2">
             {allGrits.map((g) => (
               <OptionButton
                 key={g}
                 value={g}
                 selected={selectedGrit === g}
-                available={availableGrits.has(g)}
+                available={availableGrits.has(String(g))}
                 onClick={() =>
-                  setSelectedGrit(
-                    String(g) === String(selectedGrit) ? null : String(g)
-                  )
+                  setSelectedGrit(String(g) === String(selectedGrit) ? null : String(g))
                 }
               />
             ))}
@@ -272,24 +318,18 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* Machine */}
       {allMachines.length > 1 && (
         <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {t("machine")}
-          </h3>
-
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("machine")}</h3>
           <div className="flex flex-wrap gap-2">
             {allMachines.map((m) => (
               <OptionButton
                 key={m}
                 value={m}
                 selected={selectedMachine === m}
-                available={availableMachines.has(m)}
+                available={availableMachines.has(String(m))}
                 onClick={() =>
-                  setSelectedMachine(
-                    String(m) === String(selectedMachine) ? null : String(m)
-                  )
+                  setSelectedMachine(String(m) === String(selectedMachine) ? null : String(m))
                 }
               />
             ))}
@@ -310,13 +350,7 @@ export default function ProductVariantsSelector({ product, variants }: any) {
         </div>
       )}
 
-      {/* 🛒 ACTIONS */}
-      <ProductActions
-        product={product}
-        variant={finalVariant}
-        disabled={false}
-      />
-
+      <ProductActions product={product} variant={finalVariant} disabled={false} />
     </div>
   );
 }
