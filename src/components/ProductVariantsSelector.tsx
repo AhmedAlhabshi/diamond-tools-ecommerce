@@ -17,16 +17,19 @@ export default function ProductVariantsSelector({ product, variants }: any) {
   const [selectedMachine, setSelectedMachine] = useState<string | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
 
-  const cleanOptions = (field: string): string[] => {
-    return [
-      ...new Set(
-        variants
-          .map((v: any) => v[field])
-          .filter((value: any) => value !== null && value !== undefined && value !== "")
-          .map((value: any) => String(value))
-      ),
-    ];
-  };
+ const cleanOptions = (field: string): string[] => {
+  const options = variants
+    .map((v: any) => v[field])
+    .filter(
+      (value: any) =>
+        value !== null &&
+        value !== undefined &&
+        value !== ""
+    )
+    .map((value: any) => String(value));
+
+  return Array.from(new Set<string>(options));
+};
 
 const getMaterialKey = (v: any) => {
   return String(v.material_name_en || v.material_name_ar || "")
