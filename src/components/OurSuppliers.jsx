@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 const brands = [
   "/brands/Tyrolit1.jpg",
   "/brands/Sundisc1.jpg",
-  "/brands/Starke1.jpg",
+  "/brands/starke1.jpg",
   "/brands/Saint-Gobain1.jpg",
   "/brands/Mirka1.jpg",
   "/brands/GrindoJet1.jpg",

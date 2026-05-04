@@ -24,6 +24,8 @@ export default function ProductVariantsPage() {
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [iconFile, setIconFile] = useState<File | null>(null)
+const [iconUrl, setIconUrl] = useState("")
 
   const resetForm = () => {
     setDiameter("")
@@ -70,6 +72,30 @@ export default function ProductVariantsPage() {
 
     setLoading(true)
 
+    let finalIconUrl = iconUrl
+
+if (iconFile) {
+  const fileExt = iconFile.name.split(".").pop()
+  const fileName = `variant-icons/${crypto.randomUUID()}.${fileExt}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("products")
+    .upload(fileName, iconFile)
+
+  if (uploadError) {
+    console.error(uploadError)
+    alert("Error uploading icon")
+    setLoading(false)
+    return
+  }
+
+  const { data } = supabase.storage
+    .from("products")
+    .getPublicUrl(fileName)
+
+  finalIconUrl = data.publicUrl
+}
+
     let error
 
     if (editingId) {
@@ -86,6 +112,7 @@ export default function ProductVariantsPage() {
           description_ar: descriptionAr,
           price: Number(price),
           stock: stock ? Number(stock) : 0,
+          icon_url: finalIconUrl,
         })
         .eq("id", editingId)
 
@@ -105,6 +132,7 @@ export default function ProductVariantsPage() {
           description_ar: descriptionAr,
           price: Number(price),
           stock: stock ? Number(stock) : 0,
+          icon_url: finalIconUrl,
         })
 
       error = res.error
@@ -201,6 +229,32 @@ export default function ProductVariantsPage() {
           className="w-full border p-2 rounded"
         />
 
+        <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Variant Icon
+  </label>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      setIconFile(file)
+      setIconUrl(URL.createObjectURL(file))
+    }}
+    className="w-full border p-2 rounded"
+  />
+
+  {iconUrl && (
+    <img
+      src={iconUrl}
+      alt="Variant icon"
+      className="w-12 h-12 object-contain mt-3 border rounded p-1"
+    />
+  )}
+</div>
+
         <textarea
           placeholder="Variant Description English"
           value={descriptionEn}
@@ -279,6 +333,7 @@ export default function ProductVariantsPage() {
                 <th className="p-3 text-left">Price</th>
                 <th className="p-3 text-left">Stock</th>
                 <th className="p-3 text-left">Actions</th>
+                <th className="p-3 text-left">Icon</th>
               </tr>
             </thead>
 
@@ -286,6 +341,17 @@ export default function ProductVariantsPage() {
 
               {variants.map((v) => (
                 <tr key={v.id} className="border-t">
+                  <td className="p-3">
+  {v.icon_url ? (
+    <img
+      src={v.icon_url}
+      alt="Variant icon"
+      className="w-8 h-8 object-contain"
+    />
+  ) : (
+    "-"
+  )}
+</td>
                   <td className="p-3">{v.diameter || "-"}</td>
                   <td className="p-3">{v.hole_size || "-"}</td>
                   <td className="p-3">{v.grit || "-"}</td>
@@ -311,6 +377,8 @@ export default function ProductVariantsPage() {
                         setDescriptionAr(v.description_ar || "")
                         setPrice(String(v.price || ""))
                         setStock(String(v.stock || ""))
+                        setIconUrl(v.icon_url || "")
+                        setIconFile(null)
                       }}
                       className="text-blue-600 hover:underline mr-3"
                     >
