@@ -142,42 +142,44 @@ export default async function ProductsPage({
 
               {products.map((product: any) => (
 
-                <div
-                  key={product.id}
-                  className="bg-white border rounded-xl p-3 sm:p-4"
-                >
+<div
+  key={product.id}
+  className="bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
+>
 
-                  <Link href={`/products/${product.id}`}>
+  <Link href={`/products/${product.id}`}>
 
-                    <div className="aspect-square flex items-center justify-center mb-3 p-2">
+    <div className="aspect-square flex items-center justify-center mb-3 p-2">
 
-                      {product.images?.[0] ? (
-                        <img
-                          src={product.images[0]}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <PackageSearch />
-                      )}
+      {product.images?.[0] ? (
+        <img
+          src={product.images[0]}
+          className="w-full h-full object-contain"
+        />
+      ) : (
+        <PackageSearch />
+      )}
 
-                    </div>
+    </div>
 
-                    <h3 className="text-sm sm:text-base mb-2 line-clamp-2 text-center w-full">
-                      {locale === 'ar' ? product.name_ar : product.name_en}
-                    </h3>
+    <h3 className="text-sm sm:text-base mb-2 line-clamp-2 min-h-[44px] text-center w-full">
+      {locale === 'ar' ? product.name_ar : product.name_en}
+    </h3>
 
-                  </Link>
+  </Link>
 
-                  <ProductPrice
-                    product={product}
-                    variant={product.variant}
-                  />
+  <div className="mt-auto flex flex-col gap-2">
+    <ProductPrice
+      product={product}
+      variant={product.variant}
+    />
 
-                  {user && (
-                    <AddToCartButton product={product} />
-                  )}
+    {user && (
+      <AddToCartButton product={product} />
+    )}
+  </div>
 
-                </div>
+</div>
 
               ))}
 

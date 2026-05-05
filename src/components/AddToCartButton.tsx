@@ -36,20 +36,23 @@ export default function AddToCartButton({
 
     if (variantToUse) {
       addItem({
-        product_id: product.id,
-        variant_id: variantToUse.id,
-        name: productName,
-        image: product.images?.[0],
-        price: variantToUse.price,
-        quantity,
-        diameter: variantToUse.diameter,
-        thickness: variantToUse.thickness,
-        hole_size: variantToUse.hole_size,
-        grit: variantToUse.grit,
-        length: variantToUse.length,
-        machine: variantToUse.machine,
-        material_name_en: variant?.material_name_en,
-material_name_ar: variant?.material_name_ar,
+    product_id: product.id,
+    variant_id: variantToUse.id,
+    name: productName,
+    image: product.images?.[0],
+    price: variantToUse.price,
+    quantity,
+
+    diameter: variantToUse.diameter,
+    thickness: variantToUse.thickness,
+    hole_size: variantToUse.hole_size,
+    grit: variantToUse.grit,
+    length: variantToUse.length,
+    machine: variantToUse.machine,
+    stand: variantToUse.stand, // ✅ ADD THIS
+
+    material_name_en: variant?.material_name_en,
+    material_name_ar: variant?.material_name_ar,
       })
 
       toast.success(t("added"), { duration: 500 })

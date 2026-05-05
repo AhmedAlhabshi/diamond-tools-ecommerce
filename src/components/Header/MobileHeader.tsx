@@ -79,10 +79,16 @@ const [submitted, setSubmitted] = useState(false);
     return () => document.removeEventListener("pointerdown", handleClickOutside)
   }, [])
 
-  useEffect(() => {
+useEffect(() => {
   const open = () => setShowQuote(true);
+
+  window.addEventListener("open-quote-modal", open);
   window.addEventListener("openQuoteModal", open);
-  return () => window.removeEventListener("openQuoteModal", open);
+
+  return () => {
+    window.removeEventListener("open-quote-modal", open);
+    window.removeEventListener("openQuoteModal", open);
+  };
 }, []);
 
 useEffect(() => {

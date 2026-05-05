@@ -21,6 +21,7 @@ export interface CartItem {
   machine?: string;
   material_name_en?: string
   material_name_ar?: string
+  stand?: string
   
 }
 

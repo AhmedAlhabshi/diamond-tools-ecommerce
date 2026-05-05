@@ -15,69 +15,70 @@ export default function ProductVariantsSelector({ product, variants }: any) {
   const [selectedThickness, setSelectedThickness] = useState<string | null>(null);
   const [selectedLength, setSelectedLength] = useState<string | null>(null);
   const [selectedMachine, setSelectedMachine] = useState<string | null>(null);
+  const [selectedStand, setSelectedStand] = useState<string | null>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
 
- const cleanOptions = (field: string): string[] => {
-  const options = variants
-    .map((v: any) => v[field])
-    .filter(
-      (value: any) =>
-        value !== null &&
-        value !== undefined &&
-        value !== ""
-    )
-    .map((value: any) => String(value));
+  const cleanOptions = (field: string): string[] => {
+    const options = variants
+      .map((v: any) => v[field])
+      .filter(
+        (value: any) =>
+          value !== null &&
+          value !== undefined &&
+          value !== ""
+      )
+      .map((value: any) => String(value));
 
-  return Array.from(new Set<string>(options));
-};
+    return Array.from(new Set<string>(options));
+  };
 
-const getMaterialKey = (v: any) => {
-  return String(v.material_name_en || v.material_name_ar || "")
-    .trim()
-    .toLowerCase();
-};
+  const getMaterialKey = (v: any) => {
+    return String(v.material_name_en || v.material_name_ar || "")
+      .trim()
+      .toLowerCase();
+  };
 
-const allMaterials = useMemo(() => {
-  const map = new Map<string, any>();
+  const allMaterials = useMemo(() => {
+    const map = new Map<string, any>();
 
-  variants.forEach((v: any) => {
-    if (!v.material_icon_url) return;
+    variants.forEach((v: any) => {
+      if (!v.material_icon_url) return;
 
-    const key = getMaterialKey(v);
+      const key = getMaterialKey(v);
 
-    if (!map.has(key)) {
-      map.set(key, {
-        key,
-        name_en: v.material_name_en || "",
-        name_ar: v.material_name_ar || "",
-        icon_url: v.material_icon_url || "",
-      });
-    }
-  });
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          name_en: v.material_name_en || "",
+          name_ar: v.material_name_ar || "",
+          icon_url: v.material_icon_url || "",
+        });
+      }
+    });
 
-  return Array.from(map.values());
-}, [variants]);
-
+    return Array.from(map.values());
+  }, [variants]);
 
   const sortOptions = (options: string[]) => {
-  return [...options].sort((a, b) => {
-    const numA = parseFloat(a.replace(/[^\d.]/g, ""))
-    const numB = parseFloat(b.replace(/[^\d.]/g, ""))
+    return [...options].sort((a, b) => {
+      const numA = parseFloat(a.replace(/[^\d.]/g, ""));
+      const numB = parseFloat(b.replace(/[^\d.]/g, ""));
 
-    if (!isNaN(numA) && !isNaN(numB)) {
-      return numA - numB
-    }
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
 
-    return a.localeCompare(b)
-  })
-}
+      return a.localeCompare(b);
+    });
+  };
 
-const allDiameters = sortOptions(cleanOptions("diameter"));
-const allThickness = sortOptions(cleanOptions("thickness"));
-const allHoles = sortOptions(cleanOptions("hole_size"));
-const allGrits = sortOptions(cleanOptions("grit"));
-const allLengths = sortOptions(cleanOptions("length"));
-const allMachines = sortOptions(cleanOptions("machine"));
+  const allDiameters = sortOptions(cleanOptions("diameter"));
+  const allThickness = sortOptions(cleanOptions("thickness"));
+  const allHoles = sortOptions(cleanOptions("hole_size"));
+  const allGrits = sortOptions(cleanOptions("grit"));
+  const allLengths = sortOptions(cleanOptions("length"));
+  const allMachines = sortOptions(cleanOptions("machine"));
+  const allStands = sortOptions(cleanOptions("stand"));
 
   const activeOptionGroups = [
     allDiameters.length > 1,
@@ -86,6 +87,7 @@ const allMachines = sortOptions(cleanOptions("machine"));
     allGrits.length > 1,
     allLengths.length > 1,
     allMachines.length > 1,
+    allStands.length > 1,
     allMaterials.length > 1,
   ].filter(Boolean).length;
 
@@ -100,6 +102,7 @@ const allMachines = sortOptions(cleanOptions("machine"));
         (!selectedThickness || String(v.thickness) === String(selectedThickness)) &&
         (!selectedLength || String(v.length) === String(selectedLength)) &&
         (!selectedMachine || String(v.machine) === String(selectedMachine)) &&
+        (!selectedStand || String(v.stand) === String(selectedStand)) &&
         (!selectedMaterial || getMaterialKey(v) === selectedMaterial)
     );
   }, [
@@ -110,6 +113,7 @@ const allMachines = sortOptions(cleanOptions("machine"));
     selectedThickness,
     selectedLength,
     selectedMachine,
+    selectedStand,
     selectedMaterial,
   ]);
 
@@ -141,6 +145,7 @@ const allMachines = sortOptions(cleanOptions("machine"));
   const availableGrits = cleanAvailable("grit");
   const availableLengths = cleanAvailable("length");
   const availableMachines = cleanAvailable("machine");
+  const availableStands = cleanAvailable("stand");
 
   const selectedVariant = useMemo(() => {
     if (!filteredVariants?.length) return null;
@@ -221,48 +226,47 @@ const allMachines = sortOptions(cleanOptions("machine"));
         </div>
       )}
 
-{allMaterials.length > 1 && (
-  <div>
-    <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-      {isArabic ? "المادة" : "Material"}
-    </h3>
+      {allMaterials.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+            {isArabic ? "المادة" : "Material"}
+          </h3>
 
-    <div className="flex flex-wrap gap-4 items-center">
-      {allMaterials.map((material: any) => {
-        const selected = selectedMaterial === material.key;
-        const available = availableMaterials.has(material.key);
+          <div className="flex flex-wrap gap-4 items-center">
+            {allMaterials.map((material: any) => {
+              const selected = selectedMaterial === material.key;
+              const available = availableMaterials.has(material.key);
 
-        return (
-          <button
-            key={material.key}
-            onClick={() =>
-              setSelectedMaterial(selected ? null : material.key)
-            }
-            disabled={!available}
-            className={`
-              relative flex items-center justify-center
-              ${!available ? "opacity-30 cursor-not-allowed" : ""}
-            `}
-          >
-            <img
-              src={material.icon_url}
-              alt="material"
-              className={`
-                w-15 h-15 object-contain transition
-                ${selected ? "scale-110" : "hover:scale-105"}
-              `}
-            />
+              return (
+                <button
+                  key={material.key}
+                  onClick={() =>
+                    setSelectedMaterial(selected ? null : material.key)
+                  }
+                  disabled={!available}
+                  className={`
+                    relative flex items-center justify-center
+                    ${!available ? "opacity-30 cursor-not-allowed" : ""}
+                  `}
+                >
+                  <img
+                    src={material.icon_url}
+                    alt="material"
+                    className={`
+                      w-15 h-15 object-contain transition
+                      ${selected ? "scale-110" : "hover:scale-105"}
+                    `}
+                  />
 
-            {/* Selected ring */}
-            {selected && (
-              <span className="absolute inset-0 rounded-full border-2 border-blue-600"></span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
+                  {selected && (
+                    <span className="absolute inset-0 rounded-full border-2 border-blue-600"></span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {allLengths.length > 1 && (
         <div>
@@ -333,6 +337,27 @@ const allMachines = sortOptions(cleanOptions("machine"));
                 available={availableMachines.has(String(m))}
                 onClick={() =>
                   setSelectedMachine(String(m) === String(selectedMachine) ? null : String(m))
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allStands.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+            {isArabic ? "الحامل" : "Stand"}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {allStands.map((s) => (
+              <OptionButton
+                key={s}
+                value={s}
+                selected={selectedStand === s}
+                available={availableStands.has(String(s))}
+                onClick={() =>
+                  setSelectedStand(String(s) === String(selectedStand) ? null : String(s))
                 }
               />
             ))}

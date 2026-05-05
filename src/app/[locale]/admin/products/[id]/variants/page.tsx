@@ -16,6 +16,7 @@ export default function ProductVariantsPage() {
   const [thickness, setThickness] = useState("")
   const [length, setLength] = useState("")
   const [machine, setMachine] = useState("")
+  const [stand, setStand] = useState("") 
   const [materialNameEn, setMaterialNameEn] = useState("")
   const [materialNameAr, setMaterialNameAr] = useState("")
   const [materialIconFile, setMaterialIconFile] = useState<File | null>(null)
@@ -37,6 +38,7 @@ export default function ProductVariantsPage() {
     setThickness("")
     setLength("")
     setMachine("")
+    setStand("") 
     setMaterialNameEn("")
     setMaterialNameAr("")
     setMaterialIconFile(null)
@@ -111,6 +113,7 @@ export default function ProductVariantsPage() {
       thickness,
       length,
       machine,
+      stand,
       material_name_en: materialNameEn,
       material_name_ar: materialNameAr,
       material_icon_url: finalMaterialIconUrl,
@@ -232,6 +235,13 @@ export default function ProductVariantsPage() {
           placeholder="Machine (e.g. FRT950 or Bosch)"
           value={machine}
           onChange={(e) => setMachine(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+
+          <input
+          placeholder="Stand (e.g. With Stand / Without Stand)"
+          value={stand}
+          onChange={(e) => setStand(e.target.value)}
           className="w-full border p-2 rounded"
         />
 
@@ -373,6 +383,7 @@ export default function ProductVariantsPage() {
                 <th className="p-3 text-left">Thickness</th>
                 <th className="p-3 text-left">Length</th>
                 <th className="p-3 text-left">Machine</th>
+                <th className="p-3 text-left">Stand</th>
                 <th className="p-3 text-left">Description EN</th>
                 <th className="p-3 text-left">Description AR</th>
                 <th className="p-3 text-left">Price</th>
@@ -413,6 +424,7 @@ export default function ProductVariantsPage() {
                   <td className="p-3">{v.thickness || "-"}</td>
                   <td className="p-3">{v.length || "-"}</td>
                   <td className="p-3">{v.machine || "-"}</td>
+                  <td className="p-3">{v.stand || "-"}</td>
                   <td className="p-3 max-w-[180px] truncate">{v.description_en || "-"}</td>
                   <td className="p-3 max-w-[180px] truncate text-right" dir="rtl">{v.description_ar || "-"}</td>
                   <td className="p-3">SAR {Number(v.price || 0).toFixed(2)}</td>
@@ -428,6 +440,7 @@ export default function ProductVariantsPage() {
                         setThickness(v.thickness || "")
                         setLength(v.length || "")
                         setMachine(v.machine || "")
+                        setStand(v.stand || "")
                         setMaterialNameEn(v.material_name_en || "")
                         setMaterialNameAr(v.material_name_ar || "")
                         setMaterialIconUrl(v.material_icon_url || "")
