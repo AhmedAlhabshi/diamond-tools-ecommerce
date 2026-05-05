@@ -44,7 +44,15 @@ export default async function EditProductPage({
     .select("related_id")
     .eq("product_id", id);
 
+  const { data: productCategories } = await supabase
+    .from("product_categories")
+    .select("category_id")
+    .eq("product_id", id);
+
   const relatedIds = related?.map((r) => String(r.related_id)) || [];
+
+  const selectedCategoryIds =
+    productCategories?.map((cat) => String(cat.category_id)) || [];
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -62,6 +70,7 @@ export default async function EditProductPage({
         brands={brands || []}
         allProducts={allProducts || []}
         relatedIds={relatedIds}
+        selectedCategoryIds={selectedCategoryIds}
       />
     </div>
   );

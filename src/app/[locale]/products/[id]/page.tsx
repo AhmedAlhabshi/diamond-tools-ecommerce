@@ -1,6 +1,3 @@
-export const dynamic = "force-dynamic";
-
-
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import ProductGallery from "@/components/ProductGallery";

@@ -12,6 +12,7 @@ import { useCart } from "@/store/useCart"
 import { toast } from "sonner"
 import { createClient } from "@/utils/supabase/client"
 import { usePathname } from "@/i18n/routing"
+import { useRouter } from "@/i18n/routing"
 
 export default function MobileHeader() {
 
@@ -33,16 +34,17 @@ const [submitted, setSubmitted] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null)
   const [user, setUser] = useState<any>(null)
+  const router = useRouter()
 
   const cartItemsCount = useCart((state) =>
     state.items.reduce((acc, item) => acc + item.quantity, 0)
   )
 
-  const handleSignOut = async () => {
+const handleSignOut = async () => {
   const supabase = createClient()
   await supabase.auth.signOut()
   setUser(null)
-  window.location.href = `/${locale}/login`
+  router.push("/login")
 }
 
   /* ================= Search ================= */
@@ -116,30 +118,6 @@ useEffect(() => {
     window.removeEventListener("focus", loadUser)
   }
 }, [])
-
-useEffect(() => {
-  const supabase = createClient()
-
-  const loadUser = async () => {
-    const { data } = await supabase.auth.getUser()
-    setUser(data.user)
-  }
-
-  loadUser()
-
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user ?? null)
-  })
-
-  window.addEventListener("focus", loadUser)
-
-  return () => {
-    subscription.unsubscribe()
-    window.removeEventListener("focus", loadUser)
-  }
-}, [pathname])
 
   return (
     <header className="bg-white shadow-sm relative z-50">

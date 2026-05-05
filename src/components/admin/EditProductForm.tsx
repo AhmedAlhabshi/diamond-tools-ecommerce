@@ -14,25 +14,39 @@ export default function EditProductForm({
   brands,
   allProducts,
   relatedIds,
+  selectedCategoryIds = [],
 }: any) {
   const [descriptionEn, setDescriptionEn] = useState(product.description_en || "");
   const [descriptionAr, setDescriptionAr] = useState(product.description_ar || "");
   const [specificationsEn, setSpecificationsEn] = useState(product.specifications_en || "");
   const [specificationsAr, setSpecificationsAr] = useState(product.specifications_ar || "");
   const [downloads, setDownloads] = useState<any[]>([]);
+  const [extraCategories, setExtraCategories] = useState<string[]>(selectedCategoryIds);
 
-useEffect(() => {
-  async function load() {
-    const res = await fetch(`/api/downloads?product_id=${product.id}`);
-    const data = await res.json();
-    setDownloads(data || []);
-  }
-  load();
-}, [product.id]);  
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/downloads?product_id=${product.id}`);
+      const data = await res.json();
+      setDownloads(data || []);
+    }
+    load();
+  }, [product.id]);
+
+  const toggleCategory = (id: string) => {
+    setExtraCategories((prev) =>
+      prev.includes(id)
+        ? prev.filter((catId) => catId !== id)
+        : [...prev, id]
+    );
+  };
 
   return (
     <form action={updateProduct} className="bg-white p-6 rounded-lg shadow space-y-4">
       <input type="hidden" name="id" value={product.id} />
+
+      {extraCategories.map((id) => (
+        <input key={id} type="hidden" name="category_ids" value={id} />
+      ))}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -59,7 +73,7 @@ useEffect(() => {
       </div>
 
       <div>
-        <label>Category</label>
+        <label>Main Category</label>
         <select name="category_id" defaultValue={product.category_id || ""} className="w-full border p-2 rounded">
           <option value="">Select Category</option>
           {categories?.map((cat: any) => (
@@ -68,6 +82,25 @@ useEffect(() => {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="border rounded-lg p-4 bg-slate-50">
+        <label className="block mb-3 font-semibold">
+          Additional Categories
+        </label>
+
+        <div className="grid grid-cols-2 gap-2">
+          {categories?.map((cat: any) => (
+            <label key={cat.id} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={extraCategories.includes(String(cat.id))}
+                onChange={() => toggleCategory(String(cat.id))}
+              />
+              {cat.name_en}
+            </label>
+          ))}
+        </div>
       </div>
 
       <div>
@@ -135,95 +168,92 @@ useEffect(() => {
       </div>
 
       <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold mb-3">Downloads (PDF)</h3>
 
-  <h3 className="text-lg font-semibold mb-3">Downloads (PDF)</h3>
+        <div className="flex gap-3 items-center mb-4">
+          <input type="hidden" name="product_id" value={product.id} />
 
-{/* Upload */}
-<div className="flex gap-3 items-center mb-4">
-  <input type="hidden" name="product_id" value={product.id} />
+          <input
+            id="title_en"
+            name="title_en"
+            placeholder="File name (English)"
+            className="border p-2 rounded w-1/3"
+          />
 
-  <input
-    id="title_en"
-    name="title_en"
-    placeholder="File name (English)"
-    className="border p-2 rounded w-1/3"
-  />
+          <input
+            id="title_ar"
+            name="title_ar"
+            placeholder="File name (Arabic)"
+            className="border p-2 rounded w-1/3"
+          />
 
-  <input
-    id="title_ar"
-    name="title_ar"
-    placeholder="File name (Arabic)"
-    className="border p-2 rounded w-1/3"
-  />
+          <input
+            id="file"
+            type="file"
+            name="file"
+            accept="application/pdf"
+            className="border p-2 rounded"
+          />
 
-  <input
-    id="file"
-    type="file"
-    name="file"
-    accept="application/pdf"
-    className="border p-2 rounded"
-  />
+          <button
+            type="button"
+            onClick={async () => {
+              const formData = new FormData();
 
-  <button
-    type="button"
-    onClick={async () => {
-      const formData = new FormData();
+              formData.append("product_id", product.id);
+              formData.append(
+                "title_en",
+                (document.getElementById("title_en") as HTMLInputElement).value
+              );
+              formData.append(
+                "title_ar",
+                (document.getElementById("title_ar") as HTMLInputElement).value
+              );
 
-      formData.append("product_id", product.id);
-      formData.append(
-        "title_en",
-        (document.getElementById("title_en") as HTMLInputElement).value
-      );
-      formData.append(
-        "title_ar",
-        (document.getElementById("title_ar") as HTMLInputElement).value
-      );
+              const fileInput = document.getElementById("file") as HTMLInputElement;
 
-      const fileInput = document.getElementById("file") as HTMLInputElement;
+              if (fileInput.files?.[0]) {
+                formData.append("file", fileInput.files[0]);
+              }
 
-      if (fileInput.files?.[0]) {
-        formData.append("file", fileInput.files[0]);
-      }
+              await addProductDownload(formData);
 
-      await addProductDownload(formData);
+              location.reload();
+            }}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Upload
+          </button>
+        </div>
 
-      location.reload();
-    }}
-    className="bg-green-600 text-white px-4 py-2 rounded"
-  >
-    Upload
-  </button>
-</div>
+        <div className="space-y-2">
+          {downloads.map((file) => (
+            <div
+              key={file.id}
+              className="flex items-center justify-between border p-2 rounded"
+            >
+              <a
+                href={file.file_url}
+                target="_blank"
+                className="text-blue-600 hover:underline"
+              >
+                {file.title_en}
+              </a>
 
-  {/* List */}
-  <div className="space-y-2">
-    {downloads.map((file) => (
-      <div
-        key={file.id}
-        className="flex items-center justify-between border p-2 rounded"
-      >
-        <a
-          href={file.file_url}
-          target="_blank"
-          className="text-blue-600 hover:underline"
-        >
-          {file.title_en}
-        </a>
-
-        <button
-          onClick={async () => {
-            await deleteProductDownload(file.id, file.file_path);
-            setDownloads(downloads.filter(d => d.id !== file.id));
-          }}
-          className="text-red-600"
-        >
-          Delete
-        </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deleteProductDownload(file.id, file.file_path);
+                  setDownloads(downloads.filter(d => d.id !== file.id));
+                }}
+                className="text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
-
-</div>
 
       <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
         Update Product

@@ -31,6 +31,7 @@ export default function AddProductPage() {
   const [brands, setBrands] = useState<any[]>([])
 
   const [categoryId, setCategoryId] = useState("")
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [subCategoryId, setSubCategoryId] = useState("")
   const [brandId, setBrandId] = useState("")
 
@@ -65,6 +66,14 @@ export default function AddProductPage() {
 
     const subs = categories.filter((cat: any) => cat.parent_id === id)
     setSubCategories(subs)
+  }
+
+  const toggleExtraCategory = (id: string) => {
+    setCategoryIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((catId) => catId !== id)
+        : [...prev, id]
+    )
   }
 
   const uploadImages = async () => {
@@ -133,6 +142,28 @@ export default function AddProductPage() {
         return
       }
 
+      const allCategoryIds = Array.from(
+        new Set([
+          ...(categoryId ? [categoryId] : []),
+          ...categoryIds,
+        ])
+      )
+
+      if (allCategoryIds.length > 0) {
+        const inserts = allCategoryIds.map((catId) => ({
+          product_id: data.id,
+          category_id: catId,
+        }))
+
+        const { error: categoryError } = await supabase
+          .from("product_categories")
+          .insert(inserts)
+
+        if (categoryError) {
+          console.error("Product categories insert error:", categoryError)
+        }
+      }
+
       router.push(`/admin/products/${data.id}/variants`)
     } catch (err) {
       console.error("Unexpected error:", err)
@@ -191,7 +222,7 @@ export default function AddProductPage() {
           onChange={(e) => handleCategoryChange(e.target.value)}
           className="w-full border p-2 rounded"
         >
-          <option value="">Select Category</option>
+          <option value="">Select Main Category</option>
           {categories
             .filter((cat: any) => !cat.parent_id)
             .map((cat: any) => (
@@ -200,6 +231,27 @@ export default function AddProductPage() {
               </option>
             ))}
         </select>
+
+        <div className="border rounded-lg p-4 bg-slate-50">
+          <h3 className="font-semibold mb-3 text-slate-800">
+            Additional Categories
+          </h3>
+
+          <div className="grid grid-cols-2 gap-2">
+            {categories
+              .filter((cat: any) => !cat.parent_id)
+              .map((cat: any) => (
+                <label key={cat.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={categoryIds.includes(cat.id)}
+                    onChange={() => toggleExtraCategory(cat.id)}
+                  />
+                  {cat.name_en}
+                </label>
+              ))}
+          </div>
+        </div>
 
         <select
           value={subCategoryId}

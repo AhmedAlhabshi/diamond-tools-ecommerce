@@ -17,7 +17,7 @@ export default function LanguageSwitcher() {
     const queryString = searchParams.toString()
     const href = queryString ? `${pathname}?${queryString}` : pathname
 
-    router.replace(href, { locale: nextLocale })
+    router.push(href, { locale: nextLocale })
   }
 
   return (
