@@ -115,37 +115,33 @@ export default function ProductCard({ product, onQuickView }: any) {
           {/* 🛒 Add to Cart */}
           <button
             onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
+  e.preventDefault()
+  e.stopPropagation()
 
-              const item = cheapestVariant
-                ? {
-                    product_id: product.id,
-                    variant_id: cheapestVariant.id,
-                    name: productName,
-                    image: product.images?.[0],
-                    price: cheapestVariant.price,
-                    quantity: 1,
-                    diameter: cheapestVariant.diameter,
-                    thickness: cheapestVariant.thickness,
-                    hole_size: cheapestVariant.hole_size,
-                    grit: cheapestVariant.grit,
-                    length: cheapestVariant.length,
-                     machine: cheapestVariant.machine
-                  }
-                : {
-                    product_id: product.id,
-                    variant_id: "default",
-                    name: productName,
-                    image: product.images?.[0],
-                    price: product.individual_price,
-                    quantity: 1
-                  }
+  const hasVariants = product.product_variants?.length > 0
 
-              addItem(item)
+  if (hasVariants) {
+    toast.error(t("chooseOptions") || "Please choose product options first", {
+      duration: 2000,
+    })
 
-              toast.success(t("added"), { duration: 500 })
-            }}
+    // 🔥 redirect to product page
+    window.location.href = `/products/${product.id}?chooseOptions=true`
+    return
+  }
+
+  // ✅ no variants → normal add
+  addItem({
+    product_id: product.id,
+    variant_id: "default",
+    name: productName,
+    image: product.images?.[0],
+    price: product.individual_price,
+    quantity: 1,
+  })
+
+  toast.success(t("added"), { duration: 500 })
+}}
             className="
               bg-white border py-2 rounded-lg text-sm font-semibold
               flex items-center justify-center gap-2

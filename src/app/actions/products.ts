@@ -17,43 +17,22 @@ export async function getProducts(options?: {
   price?: string
   search?: string
 }) {
+
   const supabase = await createClient()
 
-  let query = supabase
-    .from('products')
-    .select(`
-      *,
-      product_variants!product_variants_product_id_fkey(*),
-      product_categories(
-        category_id
-      )
-    `)
-    .eq("is_active", true)
-    .order('created_at', { ascending: false })
+let query = supabase
+  .from('products')
+  .select(`
+    *,
+    product_variants!product_variants_product_id_fkey(*)
+  `)
+  .eq("is_active", true)
+.order('category_sort_order', { ascending: true })
+.order('created_at', { ascending: false })
 
-  // ✅ NEW: multi-category filter
-  // keeps old category_id fallback too
-if (options?.categoryId) {
-  const { data: linkedProducts, error: linkedError } = await supabase
-    .from("product_categories")
-    .select("product_id")
-    .eq("category_id", options.categoryId)
-
-  if (linkedError) {
-    console.error("Error fetching product categories:", linkedError)
+  if (options?.categoryId) {
+    query = query.eq('category_id', options.categoryId)
   }
-
-  const productIds =
-    linkedProducts?.map((item: any) => item.product_id) || []
-
-  if (productIds.length > 0) {
-    query = query.or(
-      `category_id.eq.${options.categoryId},id.in.(${productIds.join(",")})`
-    )
-  } else {
-    query = query.eq("category_id", options.categoryId)
-  }
-}
 
   if (options?.brandId) {
     query = query.eq('brand_id', options.brandId)
@@ -83,7 +62,9 @@ if (options?.categoryId) {
     return []
   }
 
+  // 🔥 ADD THIS PART (IMPORTANT)
   const formatted = data?.map((product: any) => {
+
     let lowestVariant = null
 
     if (product.product_variants?.length > 0) {
@@ -121,24 +102,6 @@ export async function getProduct(id: string) {
   return data
 }
 
-export async function getProductCategories(productId: string) {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from("product_categories")
-    .select(`
-      category_id,
-      categories(*)
-    `)
-    .eq("product_id", productId)
-
-  if (error) {
-    console.error("PRODUCT CATEGORIES ERROR:", error)
-    return []
-  }
-
-  return data || []
-}
 
 export async function deleteProduct(id: string) {
   const supabase = await createClient()
@@ -242,7 +205,6 @@ export async function updateProduct(formData: FormData) {
 
     stock: Number(formData.get("stock")) || 0,
 
-    // ✅ OLD main/default category stays
     brand_id: formData.get("brand_id") || null,
     category_id: formData.get("category_id") || null,
     sub_category_id: formData.get("sub_category_id") || null,
@@ -261,39 +223,6 @@ export async function updateProduct(formData: FormData) {
   if (error) {
     console.error("UPDATE ERROR:", error)
     throw new Error("Update failed")
-  }
-
-  // ✅ NEW: sync multiple categories
-  // This will work when admin form sends category_ids checkboxes/multi-select
-  const categoryIds = formData.getAll("category_ids").map(String).filter(Boolean)
-
-  await supabase
-    .from("product_categories")
-    .delete()
-    .eq("product_id", id)
-
-  const mainCategoryId = formData.get("category_id")
-
-  const allCategoryIds = Array.from(
-    new Set([
-      ...(mainCategoryId ? [String(mainCategoryId)] : []),
-      ...categoryIds,
-    ])
-  )
-
-  if (allCategoryIds.length > 0) {
-    const categoryInserts = allCategoryIds.map((categoryId) => ({
-      product_id: id,
-      category_id: categoryId,
-    }))
-
-    const { error: categoryError } = await supabase
-      .from("product_categories")
-      .insert(categoryInserts)
-
-    if (categoryError) {
-      console.error("PRODUCT CATEGORIES ERROR:", categoryError)
-    }
   }
 
   const relatedIds = formData.getAll("related_products")
@@ -371,7 +300,6 @@ export async function getProductDownloads(productId: string) {
 
   return data || []
 }
-
 
 
 // 🔥 ADD DOWNLOAD

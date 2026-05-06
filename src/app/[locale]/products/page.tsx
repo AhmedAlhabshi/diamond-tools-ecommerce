@@ -175,7 +175,10 @@ export default async function ProductsPage({
     />
 
     {user && (
-      <AddToCartButton product={product} />
+      <AddToCartButton
+  product={product}
+  redirectToProductOnMissingVariant={true}
+/>
     )}
   </div>
 

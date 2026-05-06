@@ -4,6 +4,7 @@ import { useCart } from "@/store/useCart"
 import { toast } from "sonner"
 import { useLocale, useTranslations } from "next-intl"
 import { ShoppingCart } from "lucide-react"
+import { useRouter } from "@/i18n/routing"
 
 export default function AddToCartButton({
   product,
@@ -11,10 +12,14 @@ export default function AddToCartButton({
   quantity = 1,
   disabled,
   iconOnly = false,
+
+  // ✅ use true only for home/product cards
+  redirectToProductOnMissingVariant = false,
 }: any) {
   const { addItem } = useCart()
 
   const locale = useLocale()
+  const router = useRouter()
   const isArabic = locale === "ar"
 
   const t = useTranslations("Product")
@@ -26,41 +31,52 @@ export default function AddToCartButton({
   const hasVariants = product.product_variants?.length > 0
 
   const handleAddToCart = () => {
-    let variantToUse = variant
+    // ✅ Product has variants but user did not choose
+    if (hasVariants && !variant) {
+      toast.error(
+        isArabic
+          ? "يرجى اختيار الخيارات أولاً"
+          : "Please choose product options first",
+        { duration: 2000 }
+      )
 
-    if (hasVariants && !variantToUse) {
-      variantToUse = [...product.product_variants].sort(
-        (a, b) => a.price - b.price
-      )[0]
+      if (redirectToProductOnMissingVariant) {
+        router.push(`/products/${product.id}?chooseOptions=true`)
+      }
+
+      return
     }
 
-    if (variantToUse) {
+    // ✅ Product with selected variant
+    if (variant) {
       addItem({
-    product_id: product.id,
-    variant_id: variantToUse.id,
-    name: productName,
-    image: product.images?.[0],
-    price: variantToUse.price,
-    quantity,
+        product_id: product.id,
+        variant_id: variant.id,
+        name: productName,
+        image: product.images?.[0],
+        price: variant.price,
+        quantity,
 
-    diameter: variantToUse.diameter,
-    thickness: variantToUse.thickness,
-    hole_size: variantToUse.hole_size,
-    grit: variantToUse.grit,
-    length: variantToUse.length,
-    machine: variantToUse.machine,
-    stand: variantToUse.stand, // ✅ ADD THIS
+        diameter: variant.diameter,
+        thickness: variant.thickness,
+        hole_size: variant.hole_size,
+        grit: variant.grit,
+        length: variant.length,
+        machine: variant.machine,
+        stand: variant.stand,
 
-    material_name_en: variant?.material_name_en,
-    material_name_ar: variant?.material_name_ar,
+        material_name_en: variant.material_name_en,
+        material_name_ar: variant.material_name_ar,
       })
 
       toast.success(t("added"), { duration: 500 })
       return
     }
 
+    // ✅ Product without variants
     addItem({
       product_id: product.id,
+      variant_id: "default",
       name: productName,
       image: product.images?.[0],
       price: product.individual_price,
@@ -76,11 +92,13 @@ export default function AddToCartButton({
       disabled={disabled}
       aria-label={t("Add to Cart")}
       className={`
-       ${iconOnly ? "h-14 w-14" : "w-full h-12"}
+        ${iconOnly ? "h-14 w-14" : "w-full h-12"}
         rounded-xl font-semibold transition flex items-center justify-center gap-2
-        ${disabled
-          ? "bg-gray-300 cursor-not-allowed text-gray-600"
-          : "bg-blue-600 hover:bg-blue-700 text-white"}
+        ${
+          disabled
+            ? "bg-gray-300 cursor-not-allowed text-gray-600"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+        }
       `}
     >
       <ShoppingCart className="w-5 h-5" />

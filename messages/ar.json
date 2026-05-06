@@ -113,7 +113,8 @@
   "remove": "إزالة من المفضلة",
   "description": "الوصف",
   "specifications": "المواصفات",
-  "downloads": "التحميلات"
+  "downloads": "التحميلات",
+  "chooseOptions": "يرجى اختيار الخيارات أولاً"
 },
 "Categories": {
   "title": "تصفح الفئات",

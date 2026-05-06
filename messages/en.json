@@ -119,7 +119,8 @@
   "remove": "Remove from Wishlist",
   "description": "Description",
   "specifications": "Specifications",
-  "downloads": "Downloads"
+  "downloads": "Downloads",
+  "chooseOptions": "Please choose product options first"
 },
 "Categories": {
   "title": "Browse Categories",

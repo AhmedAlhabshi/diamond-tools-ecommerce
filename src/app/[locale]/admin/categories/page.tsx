@@ -7,6 +7,7 @@ import {
   Droppable,
   Draggable
 } from "@hello-pangea/dnd";
+import { useRouter } from "next/navigation";
 
 export default function CategoriesPage() {
 
@@ -18,6 +19,7 @@ export default function CategoriesPage() {
   const [image, setImage] = useState<any>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
+  const router = useRouter();
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -335,23 +337,31 @@ const deleteCategory = async (id: string) => {
 
                           </div>
 
-                          <div className="flex gap-3">
+               <div className="flex gap-3">
 
-                            <button
-                              onClick={() => editCategory(cat)}
-                              className="text-blue-600"
-                            >
-                              Edit
-                            </button>
+  {/* 🔥 NEW BUTTON */}
+  <button
+    onClick={() => router.push(`/en/admin/categories/${cat.id}`)}
+    className="text-green-600 font-semibold"
+  >
+    Products
+  </button>
 
-                            <button
-                              onClick={() => deleteCategory(cat.id)}
-                              className="text-red-500"
-                            >
-                              Delete
-                            </button>
+  <button
+    onClick={() => editCategory(cat)}
+    className="text-blue-600"
+  >
+    Edit
+  </button>
 
-                          </div>
+  <button
+    onClick={() => deleteCategory(cat.id)}
+    className="text-red-500"
+  >
+    Delete
+  </button>
+
+</div>
 
                         </div>
 
