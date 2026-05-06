@@ -30,9 +30,21 @@ let query = supabase
 .order('category_sort_order', { ascending: true })
 .order('created_at', { ascending: false })
 
-  if (options?.categoryId) {
-    query = query.eq('category_id', options.categoryId)
+if (options?.categoryId) {
+  const { data: productCategoryRows } = await supabase
+    .from("product_categories")
+    .select("product_id")
+    .eq("category_id", options.categoryId)
+
+  const productIds =
+    productCategoryRows?.map((row) => row.product_id) || []
+
+  if (productIds.length === 0) {
+    return []
   }
+
+  query = query.in("id", productIds)
+}
 
   if (options?.brandId) {
     query = query.eq('brand_id', options.brandId)

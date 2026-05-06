@@ -1,12 +1,11 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import RichTextEditor from "@/components/admin/RichTextEditor";
-import EditProductImages from "@/components/admin/EditProductImages";
-import RelatedProductsSelector from "@/components/admin/RelatedProductsSelector";
-import { updateProduct } from "@/app/actions/products";
-import { addProductDownload, deleteProductDownload } from "@/app/actions/products";
-import { useEffect } from "react";
+import { useState, useEffect } from "react"
+import RichTextEditor from "@/components/admin/RichTextEditor"
+import EditProductImages from "@/components/admin/EditProductImages"
+import RelatedProductsSelector from "@/components/admin/RelatedProductsSelector"
+import { updateProduct } from "@/app/actions/products"
+import { addProductDownload, deleteProductDownload } from "@/app/actions/products"
 
 export default function EditProductForm({
   product,
@@ -14,21 +13,23 @@ export default function EditProductForm({
   brands,
   allProducts,
   relatedIds,
+  selectedCategoryIds = [],
 }: any) {
-  const [descriptionEn, setDescriptionEn] = useState(product.description_en || "");
-  const [descriptionAr, setDescriptionAr] = useState(product.description_ar || "");
-  const [specificationsEn, setSpecificationsEn] = useState(product.specifications_en || "");
-  const [specificationsAr, setSpecificationsAr] = useState(product.specifications_ar || "");
-  const [downloads, setDownloads] = useState<any[]>([]);
+  const [descriptionEn, setDescriptionEn] = useState(product.description_en || "")
+  const [descriptionAr, setDescriptionAr] = useState(product.description_ar || "")
+  const [specificationsEn, setSpecificationsEn] = useState(product.specifications_en || "")
+  const [specificationsAr, setSpecificationsAr] = useState(product.specifications_ar || "")
+  const [downloads, setDownloads] = useState<any[]>([])
 
-useEffect(() => {
-  async function load() {
-    const res = await fetch(`/api/downloads?product_id=${product.id}`);
-    const data = await res.json();
-    setDownloads(data || []);
-  }
-  load();
-}, [product.id]);  
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/downloads?product_id=${product.id}`)
+      const data = await res.json()
+      setDownloads(data || [])
+    }
+
+    load()
+  }, [product.id])
 
   return (
     <form action={updateProduct} className="bg-white p-6 rounded-lg shadow space-y-4">
@@ -59,15 +60,39 @@ useEffect(() => {
       </div>
 
       <div>
-        <label>Category</label>
+        <label>Main Category</label>
         <select name="category_id" defaultValue={product.category_id || ""} className="w-full border p-2 rounded">
-          <option value="">Select Category</option>
-          {categories?.map((cat: any) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name_en}
-            </option>
-          ))}
+          <option value="">Select Main Category</option>
+          {categories
+            ?.filter((cat: any) => !cat.parent_id)
+            .map((cat: any) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name_en}
+              </option>
+            ))}
         </select>
+      </div>
+
+      <div className="border rounded-lg p-4 bg-slate-50">
+        <h3 className="font-semibold mb-3 text-slate-800">
+          Additional Categories
+        </h3>
+
+        <div className="grid grid-cols-2 gap-2">
+          {categories
+            ?.filter((cat: any) => !cat.parent_id)
+            .map((cat: any) => (
+              <label key={cat.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="category_ids"
+                  value={cat.id}
+                  defaultChecked={selectedCategoryIds.includes(String(cat.id))}
+                />
+                {cat.name_en}
+              </label>
+            ))}
+        </div>
       </div>
 
       <div>
@@ -125,7 +150,6 @@ useEffect(() => {
 
       <div>
         <label className="block mb-2 font-semibold">Related Products</label>
-
         <RelatedProductsSelector
           allProducts={allProducts}
           defaultSelected={allProducts?.filter((p: any) =>
@@ -135,99 +159,64 @@ useEffect(() => {
       </div>
 
       <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold mb-3">Downloads (PDF)</h3>
 
-  <h3 className="text-lg font-semibold mb-3">Downloads (PDF)</h3>
+        <div className="flex gap-3 items-center mb-4">
+          <input type="hidden" name="product_id" value={product.id} />
 
-{/* Upload */}
-<div className="flex gap-3 items-center mb-4">
-  <input type="hidden" name="product_id" value={product.id} />
+          <input id="title_en" name="title_en" placeholder="File name (English)" className="border p-2 rounded w-1/3" />
+          <input id="title_ar" name="title_ar" placeholder="File name (Arabic)" className="border p-2 rounded w-1/3" />
+          <input id="file" type="file" name="file" accept="application/pdf" className="border p-2 rounded" />
 
-  <input
-    id="title_en"
-    name="title_en"
-    placeholder="File name (English)"
-    className="border p-2 rounded w-1/3"
-  />
+          <button
+            type="button"
+            onClick={async () => {
+              const formData = new FormData()
 
-  <input
-    id="title_ar"
-    name="title_ar"
-    placeholder="File name (Arabic)"
-    className="border p-2 rounded w-1/3"
-  />
+              formData.append("product_id", product.id)
+              formData.append("title_en", (document.getElementById("title_en") as HTMLInputElement).value)
+              formData.append("title_ar", (document.getElementById("title_ar") as HTMLInputElement).value)
 
-  <input
-    id="file"
-    type="file"
-    name="file"
-    accept="application/pdf"
-    className="border p-2 rounded"
-  />
+              const fileInput = document.getElementById("file") as HTMLInputElement
 
-  <button
-    type="button"
-    onClick={async () => {
-      const formData = new FormData();
+              if (fileInput.files?.[0]) {
+                formData.append("file", fileInput.files[0])
+              }
 
-      formData.append("product_id", product.id);
-      formData.append(
-        "title_en",
-        (document.getElementById("title_en") as HTMLInputElement).value
-      );
-      formData.append(
-        "title_ar",
-        (document.getElementById("title_ar") as HTMLInputElement).value
-      );
+              await addProductDownload(formData)
+              location.reload()
+            }}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Upload
+          </button>
+        </div>
 
-      const fileInput = document.getElementById("file") as HTMLInputElement;
+        <div className="space-y-2">
+          {downloads.map((file) => (
+            <div key={file.id} className="flex items-center justify-between border p-2 rounded">
+              <a href={file.file_url} target="_blank" className="text-blue-600 hover:underline">
+                {file.title_en}
+              </a>
 
-      if (fileInput.files?.[0]) {
-        formData.append("file", fileInput.files[0]);
-      }
-
-      await addProductDownload(formData);
-
-      location.reload();
-    }}
-    className="bg-green-600 text-white px-4 py-2 rounded"
-  >
-    Upload
-  </button>
-</div>
-
-  {/* List */}
-  <div className="space-y-2">
-    {downloads.map((file) => (
-      <div
-        key={file.id}
-        className="flex items-center justify-between border p-2 rounded"
-      >
-        <a
-          href={file.file_url}
-          target="_blank"
-          className="text-blue-600 hover:underline"
-        >
-          {file.title_en}
-        </a>
-
-        <button
-          onClick={async () => {
-            await deleteProductDownload(file.id, file.file_path);
-            setDownloads(downloads.filter(d => d.id !== file.id));
-          }}
-          className="text-red-600"
-        >
-          Delete
-        </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deleteProductDownload(file.id, file.file_path)
+                  setDownloads(downloads.filter((d) => d.id !== file.id))
+                }}
+                className="text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
-
-</div>
 
       <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
         Update Product
       </button>
     </form>
-  );
+  )
 }
