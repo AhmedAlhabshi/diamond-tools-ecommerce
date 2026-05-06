@@ -1,79 +1,89 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import {
   DragDropContext,
   Droppable,
   Draggable,
-} from "@hello-pangea/dnd";
-import { useParams, useRouter } from "next/navigation";
+} from "@hello-pangea/dnd"
+import { useParams, useRouter } from "next/navigation"
 
 export default function CategoryProductsPage() {
-  const supabase = createClient();
-  const params = useParams();
-  const router = useRouter();
+  const supabase = createClient()
+  const params = useParams()
+  const router = useRouter()
 
-  const categoryId = params.id as string;
+  const categoryId = params.id as string
 
-  const [category, setCategory] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState<any>(null)
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true)
 
     const { data: categoryData } = await supabase
       .from("categories")
       .select("*")
       .eq("id", categoryId)
-      .single();
+      .single()
 
-    const { data: productsData } = await supabase
-      .from("products")
-      .select("id, name_en, name_ar, images, category_sort_order")
+    // ✅ Get products from product_categories table
+    const { data: productCategoryRows } = await supabase
+      .from("product_categories")
+      .select("product_id")
       .eq("category_id", categoryId)
-      .eq("is_active", true)
-      .order("category_sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
 
-    setCategory(categoryData);
-    setProducts(productsData || []);
-    setLoading(false);
-  };
+    const productIds =
+      productCategoryRows?.map((row: any) => row.product_id) || []
+
+    let productsData: any[] = []
+
+    if (productIds.length > 0) {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name_en, name_ar, images, category_sort_order")
+        .in("id", productIds)
+        .eq("is_active", true)
+        .order("category_sort_order", { ascending: true })
+        .order("created_at", { ascending: false })
+
+      productsData = data || []
+    }
+
+    setCategory(categoryData)
+    setProducts(productsData)
+    setLoading(false)
+  }
 
   useEffect(() => {
-    if (categoryId) fetchData();
-  }, [categoryId]);
+    if (categoryId) fetchData()
+  }, [categoryId])
 
   const handleDragEnd = async (result: any) => {
-    if (!result.destination) return;
+    if (!result.destination) return
 
-    const items = Array.from(products);
-    const [reordered] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reordered);
+    const items = Array.from(products)
+    const [reordered] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reordered)
 
-    setProducts(items);
+    setProducts(items)
 
     for (let i = 0; i < items.length; i++) {
       await supabase
         .from("products")
         .update({ category_sort_order: i })
-        .eq("id", items[i].id);
+        .eq("id", items[i].id)
     }
-  };
+  }
 
   if (loading) {
-    return (
-      <div className="p-8">
-        Loading category products...
-      </div>
-    );
+    return <div className="p-8">Loading category products...</div>
   }
 
   return (
     <div className="admin-panel p-8 bg-gray-100 min-h-screen">
-
       <button
         onClick={() => router.push("/en/admin/categories")}
         className="mb-5 text-blue-600 font-semibold"
@@ -93,7 +103,6 @@ export default function CategoryProductsPage() {
       </p>
 
       <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-lg">
-
         <h2 className="text-lg font-semibold mb-4 text-gray-800">
           Drag products to reorder
         </h2>
@@ -125,7 +134,6 @@ export default function CategoryProductsPage() {
                           className="border border-gray-200 p-4 rounded-lg bg-white hover:bg-gray-50 flex items-center justify-between"
                         >
                           <div className="flex items-center gap-4">
-
                             <div className="text-gray-400 font-bold w-6">
                               {index + 1}
                             </div>
@@ -151,7 +159,6 @@ export default function CategoryProductsPage() {
                                 {product.name_ar}
                               </div>
                             </div>
-
                           </div>
 
                           <div className="text-sm text-gray-400">
@@ -170,5 +177,5 @@ export default function CategoryProductsPage() {
         )}
       </div>
     </div>
-  );
+  )
 }
