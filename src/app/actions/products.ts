@@ -237,6 +237,35 @@ export async function updateProduct(formData: FormData) {
     throw new Error("Update failed")
   }
 
+  // ✅ UPDATE ADDITIONAL CATEGORIES
+  const selectedCategoryIds = formData
+    .getAll("category_ids")
+    .map(String)
+    .filter(Boolean)
+
+  // Remove old categories
+  await supabase
+    .from("product_categories")
+    .delete()
+    .eq("product_id", id)
+
+  // Insert new selected categories
+  if (selectedCategoryIds.length > 0) {
+    const categoryInserts = selectedCategoryIds.map((categoryId) => ({
+      product_id: id,
+      category_id: categoryId,
+    }))
+
+    const { error: categoryError } = await supabase
+      .from("product_categories")
+      .insert(categoryInserts)
+
+    if (categoryError) {
+      console.error("CATEGORY UPDATE ERROR:", categoryError)
+      throw new Error("Failed to update additional categories")
+    }
+  }
+
   const relatedIds = formData.getAll("related_products")
 
   await supabase
