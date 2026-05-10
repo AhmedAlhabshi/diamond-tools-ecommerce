@@ -150,6 +150,22 @@ export async function updateProduct(formData: FormData) {
 
   let images: string[] = existing?.images || []
 
+  const imageOrderRaw = formData.get("image_order") as string | null
+
+if (imageOrderRaw) {
+  try {
+    const orderedImages = JSON.parse(imageOrderRaw)
+
+    if (Array.isArray(orderedImages)) {
+      images = orderedImages.filter((img: string) =>
+        images.includes(img)
+      )
+    }
+  } catch (error) {
+    console.error("Invalid image order:", error)
+  }
+}
+
   const deleteImages = formData.getAll("delete_images").map(String)
 
   if (deleteImages.length > 0) {
