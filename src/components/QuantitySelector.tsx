@@ -3,7 +3,12 @@
 import { Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export default function QuantitySelector({ qty, setQty }: any) {
+export default function QuantitySelector({
+  qty,
+  setQty,
+  unitLabel,
+}: any) {
+
   const t = useTranslations("Product");
 
   const handleChange = (value: string) => {
@@ -17,10 +22,10 @@ export default function QuantitySelector({ qty, setQty }: any) {
 
   return (
     <div className="flex items-center gap-3">
-      
+
       {/* Label */}
       <span className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
-        {t("quantity")}
+        {unitLabel || t("quantity")}
       </span>
 
       {/* Selector */}

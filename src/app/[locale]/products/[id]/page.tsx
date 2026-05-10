@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import WishlistButton from "@/components/WishlistButton";
 import { getProductDownloads } from "@/app/actions/products";
 import ProductQuoteBox from "@/components/ProductQuoteBox";
+import { getTranslations } from "next-intl/server";
 
 
 export default async function ProductPage({
@@ -19,6 +20,7 @@ export default async function ProductPage({
   const { id, locale } = await params;
 
   const supabase = await createClient();
+  
 
   const isArabic = locale === "ar";
 
@@ -74,8 +76,12 @@ export default async function ProductPage({
   ? brand?.name_ar || brand?.name
   : brand?.name;  
 
-  const downloads = await getProductDownloads(product.id);
+const downloads = await getProductDownloads(product.id);
 
+const tUnits = await getTranslations("Units");
+
+const unitKey = product.unit || "quantity";
+const unitLabel = tUnits(unitKey);
 
   return (
 
@@ -141,6 +147,7 @@ export default async function ProductPage({
 <ProductVariantsSelector
   product={product}
   variants={variants || []}
+  unitLabel={unitLabel}
 />
 
 <ProductQuoteBox locale={locale} />

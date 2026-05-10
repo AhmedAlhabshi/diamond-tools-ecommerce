@@ -10,6 +10,7 @@ export default function ProductActions({
   product,
   variant,
   displayVariant,
+  unitLabel,
 }: any) {
   const [qty, setQty] = useState(1)
 
@@ -22,7 +23,11 @@ export default function ProductActions({
   return (
     <div className="mt-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <QuantitySelector qty={qty} setQty={setQty} />
+        <QuantitySelector
+          qty={qty}
+          setQty={setQty}
+          unitLabel={unitLabel}
+        />
 
         <div className="text-xl font-bold text-brand-blue whitespace-nowrap">
           <ProductPrice price={price} />

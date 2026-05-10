@@ -482,6 +482,13 @@
   "total": "Total",
   "whatsappBranch": "Contact branch on WhatsApp",
   "openLocation": "Open location"
+},
+"Units": {
+  "quantity": "Quantity",
+  "meter": "Meter",
+  "piece": "Piece",
+  "set": "Set",
+  "box": "Box"
 }
 }
 

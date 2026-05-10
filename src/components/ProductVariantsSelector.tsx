@@ -4,7 +4,11 @@ import { useState, useMemo } from "react"
 import ProductActions from "@/components/ProductActions"
 import { useTranslations, useLocale } from "next-intl"
 
-export default function ProductVariantsSelector({ product, variants }: any) {
+export default function ProductVariantsSelector({
+  product,
+  variants,
+  unitLabel,
+}: any) {
   const t = useTranslations("Product")
   const locale = useLocale()
   const isArabic = locale === "ar"
@@ -391,6 +395,7 @@ onClick={() => setSelectedMachine(String(m))}
   }}
   variant={cartVariant}
   displayVariant={displayVariant}
+  unitLabel={unitLabel}
 />
     </div>
   )

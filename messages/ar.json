@@ -481,6 +481,13 @@
   "total": "الإجمالي",
   "whatsappBranch": "تواصل مع الفرع عبر واتساب",
   "openLocation": "موقع الفرع"
+},
+"Units": {
+  "quantity": "الكمية",
+  "meter": "متر",
+  "piece": "قطعة",
+  "set": "طقم",
+  "box": "علبة"
 }
 
 }
