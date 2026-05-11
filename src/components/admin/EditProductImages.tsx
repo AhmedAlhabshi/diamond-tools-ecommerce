@@ -78,21 +78,34 @@ export default function EditProductImages({ images }: { images: string[] }) {
         value={JSON.stringify(orderedImages)}
       />
 
-      {deleted.map((img, index) => (
-        <input
-          key={index}
-          type="hidden"
-          name="delete_images"
-          value={img}
-        />
-      ))}
+{/* Hidden inputs */}
+{deleted.map((img) => (
+  <input
+    key={img}
+    type="hidden"
+    name="delete_images"
+    value={img}
+  />
+))}
 
-      <input
-        type="file"
-        name="images"
-        multiple
-        className="mt-3"
-      />
+{/* Ordered images */}
+{orderedImages
+  .filter((img) => !deleted.includes(img))
+  .map((img) => (
+    <input
+      key={img}
+      type="hidden"
+      name="ordered_images"
+      value={img}
+    />
+  ))}
+
+<input
+  type="file"
+  name="images"
+  multiple
+  className="mt-3"
+/>
     </div>
   )
 }

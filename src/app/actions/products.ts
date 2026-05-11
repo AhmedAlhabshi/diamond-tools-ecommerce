@@ -164,6 +164,12 @@ export async function updateProduct(formData: FormData) {
 
   let images: string[] = existing?.images || []
 
+  const orderedImages = formData.getAll("ordered_images").map(String)
+
+if (orderedImages.length > 0) {
+  images = orderedImages
+}
+
   
 
   const deleteImages = formData.getAll("delete_images").map(String)

@@ -47,13 +47,13 @@ console.log(product)
       <div className="group relative h-28 sm:h-32 bg-transparent flex items-center justify-center p-3 overflow-hidden">
 
 {product.brand?.image && (
-  <div className="absolute top-2 left-2 z-20 bg-white/90 rounded-full p-1.5 shadow-md border border-gray-100">
-    <img
-      src={product.brand.image}
-      alt={product.brand.name_en || "Brand"}
-      className="w-7 h-7 object-contain"
-    />
-  </div>
+<div className="absolute -top-3 -left-0 z-30">
+  <img
+    src={product.brand.image}
+    alt={product.brand.name_en || "Brand"}
+    className="w-14 h-14 object-contain"
+  />
+</div>
 )}
 
 {product.images?.[0] ? (

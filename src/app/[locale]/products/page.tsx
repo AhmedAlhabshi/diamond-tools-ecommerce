@@ -147,13 +147,13 @@ export default async function ProductsPage({
   className="relative bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
 >
   {product.brand?.image && (
-    <div className="absolute top-4 left-4 z-20 bg-white rounded-full p-1 shadow-md border">
-      <img
-        src={product.brand.image}
-        alt={product.brand.name_en || "Brand"}
-        className="w-8 h-8 object-contain"
-      />
-    </div>
+<div className="absolute -top-3 -left-0 z-30">
+  <img
+    src={product.brand.image}
+    alt={product.brand.name_en || "Brand"}
+    className="w-14 h-14 object-contain"
+  />
+</div>
   )}
 
   <Link href={`/products/${product.id}`}>
