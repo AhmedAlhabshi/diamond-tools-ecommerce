@@ -19,6 +19,7 @@ export default function ProductCard({ product, onQuickView }: any) {
 
   const t = useTranslations("Product")
 
+
   /* ================= LANGUAGE FIX ================= */
   const productName = isArabic
     ? product.name_ar || product.name_en
@@ -26,11 +27,13 @@ export default function ProductCard({ product, onQuickView }: any) {
 
   const variants = product.product_variants || []
 
-  const cheapestVariant = variants.length > 0
-    ? variants.reduce((min: any, v: any) =>
-        v.price < min.price ? v : min
-      , variants[0])
-    : null
+const cheapestVariant = variants.length > 0
+  ? variants.reduce((min: any, v: any) =>
+      v.price < min.price ? v : min
+    , variants[0])
+  : null
+
+console.log(product)
 
   return (
 
@@ -42,6 +45,16 @@ export default function ProductCard({ product, onQuickView }: any) {
 
       {/* ================= IMAGE ================= */}
       <div className="group relative h-28 sm:h-32 bg-transparent flex items-center justify-center p-3 overflow-hidden">
+
+{product.brand?.image && (
+  <div className="absolute top-2 left-2 z-20 bg-white/90 rounded-full p-1.5 shadow-md border border-gray-100">
+    <img
+      src={product.brand.image}
+      alt={product.brand.name_en || "Brand"}
+      className="w-7 h-7 object-contain"
+    />
+  </div>
+)}
 
 {product.images?.[0] ? (
   <>

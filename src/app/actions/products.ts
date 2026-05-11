@@ -74,6 +74,18 @@ if (options?.categoryId) {
     return []
   }
 
+  const brandIds = [
+  ...new Set((data || []).map((p: any) => p.brand_id).filter(Boolean)),
+]
+
+const { data: brands } = await supabase
+  .from("brands")
+  .select("*")
+
+const brandsMap = new Map(
+  brands?.map((brand: any) => [String(brand.id), brand]) || []
+)
+
   // 🔥 ADD THIS PART (IMPORTANT)
   const formatted = data?.map((product: any) => {
 
@@ -85,10 +97,12 @@ if (options?.categoryId) {
       )
     }
 
-    return {
-      ...product,
-      variant: lowestVariant
-    }
+return {
+  ...product,
+  brand:
+    brands?.find((b: any) => b.id === product.brand_id) || null,
+  variant: lowestVariant,
+}
   })
 
   return formatted || []
@@ -150,21 +164,7 @@ export async function updateProduct(formData: FormData) {
 
   let images: string[] = existing?.images || []
 
-  const imageOrderRaw = formData.get("image_order") as string | null
-
-if (imageOrderRaw) {
-  try {
-    const orderedImages = JSON.parse(imageOrderRaw)
-
-    if (Array.isArray(orderedImages)) {
-      images = orderedImages.filter((img: string) =>
-        images.includes(img)
-      )
-    }
-  } catch (error) {
-    console.error("Invalid image order:", error)
-  }
-}
+  
 
   const deleteImages = formData.getAll("delete_images").map(String)
 

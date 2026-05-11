@@ -144,23 +144,34 @@ export default async function ProductsPage({
 
 <div
   key={product.id}
-  className="bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
+  className="relative bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
 >
+  {product.brand?.image && (
+    <div className="absolute top-4 left-4 z-20 bg-white rounded-full p-1 shadow-md border">
+      <img
+        src={product.brand.image}
+        alt={product.brand.name_en || "Brand"}
+        className="w-8 h-8 object-contain"
+      />
+    </div>
+  )}
 
   <Link href={`/products/${product.id}`}>
 
-    <div className="aspect-square flex items-center justify-center mb-3 p-2">
+<div className="relative aspect-square flex items-center justify-center mb-3 p-2 overflow-hidden">
 
-      {product.images?.[0] ? (
-        <img
-          src={product.images[0]}
-          className="w-full h-full object-contain"
-        />
-      ) : (
-        <PackageSearch />
-      )}
 
-    </div>
+
+  {product.images?.[0] ? (
+    <img
+      src={product.images[0]}
+      className="w-full h-full object-contain"
+    />
+  ) : (
+    <PackageSearch />
+  )}
+
+</div>
 
     <h3 className="text-sm sm:text-base mb-2 line-clamp-2 min-h-[44px] text-center w-full">
       {locale === 'ar' ? product.name_ar : product.name_en}
