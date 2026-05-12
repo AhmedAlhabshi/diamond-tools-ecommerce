@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import ProductActions from "@/components/ProductActions"
 import { useTranslations, useLocale } from "next-intl"
 
@@ -8,6 +8,7 @@ export default function ProductVariantsSelector({
   product,
   variants,
   unitLabel,
+  onVariantImageChange,
 }: any) {
   const t = useTranslations("Product")
   const locale = useLocale()
@@ -196,6 +197,10 @@ const availableMaterials = useMemo(() => {
       ? displayVariant.description_ar || displayVariant.description_en
       : displayVariant.description_en
     : null
+
+    useEffect(() => {
+  onVariantImageChange?.(displayVariant?.variant_image || "")
+}, [displayVariant, onVariantImageChange])
 
 const OptionButton = ({ value, selected, available, onClick }: any) => (
   <button

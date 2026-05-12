@@ -30,6 +30,9 @@ export default function ProductVariantsPage() {
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  
+  const [productImages, setProductImages] = useState<string[]>([])
+  const [variantImage, setVariantImage] = useState("")
 
   const resetForm = () => {
     setDiameter("")
@@ -49,6 +52,7 @@ export default function ProductVariantsPage() {
     setPrice("")
     setStock("")
     setEditingId(null)
+    setVariantImage("")
   }
 
   const fetchVariants = async () => {
@@ -66,6 +70,14 @@ export default function ProductVariantsPage() {
     }
 
     setVariants(data || [])
+
+    const { data: productData } = await supabase
+  .from("products")
+  .select("images")
+  .eq("id", productId)
+  .single()
+
+setProductImages(productData?.images || [])
   }
 
   useEffect(() => {
@@ -121,6 +133,7 @@ export default function ProductVariantsPage() {
       description_ar: descriptionAr,
       price: Number(price),
       stock: stock ? Number(stock) : 0,
+      variant_image: variantImage,
     }
 
     let error
@@ -313,6 +326,33 @@ export default function ProductVariantsPage() {
           </button>
         </div>
 
+        <div className="border rounded-lg p-4 bg-slate-50">
+  <h3 className="font-semibold mb-3">
+    Variant Image
+  </h3>
+
+  <div className="flex flex-wrap gap-3">
+    {productImages.map((img) => (
+      <button
+        key={img}
+        type="button"
+        onClick={() => setVariantImage(img)}
+        className={`border-2 rounded-lg overflow-hidden ${
+          variantImage === img
+            ? "border-blue-600"
+            : "border-transparent"
+        }`}
+      >
+        <img
+          src={img}
+          alt="Variant"
+          className="w-24 h-24 object-cover"
+        />
+      </button>
+    ))}
+  </div>
+</div>
+
         <textarea
           placeholder="Variant Description English"
           value={descriptionEn}
@@ -441,6 +481,7 @@ export default function ProductVariantsPage() {
                         setLength(v.length || "")
                         setMachine(v.machine || "")
                         setStand(v.stand || "")
+                        setVariantImage(v.variant_image || "")
                         setMaterialNameEn(v.material_name_en || "")
                         setMaterialNameAr(v.material_name_ar || "")
                         setMaterialIconUrl(v.material_icon_url || "")

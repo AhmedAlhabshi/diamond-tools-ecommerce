@@ -9,6 +9,7 @@ import WishlistButton from "@/components/WishlistButton";
 import { getProductDownloads } from "@/app/actions/products";
 import ProductQuoteBox from "@/components/ProductQuoteBox";
 import { getTranslations } from "next-intl/server";
+import ProductDetailsClient from "@/components/ProductDetailsClient"
 
 
 export default async function ProductPage({
@@ -115,64 +116,12 @@ const unitLabel = tUnits(unitKey);
       </div>
 
       {/* ================= MAIN ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12 items-start">
-
-        {/* LEFT - Images */}
-        <ProductGallery images={product.images || []} />
-
-{/* RIGHT - Info */}
-<div className="space-y-2 sm:space-y-3">
-
-  {/* Brand + Title */}
-  <div className="flex items-center justify-between gap-4">
-
-    <div>
-      <Link
-        href={`/products?brand=${brand?.id}`}
-        className="
-          text-sm uppercase tracking-widest 
-          text-black font-semibold 
-          underline 
-          hover:text-blue-600 transition
-          block mb-1
-        "
-      >
-        {brandName}
-      </Link>
-
-      <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
-        {productName}
-      </h1>
-    </div>
-
-    {brand?.image && (
-      <div className="shrink-0 flex items-center">
-        <img
-          src={brand.image}
-          alt={brandName || "Brand"}
-          className="w-32 sm:w-40 object-contain"
-        />
-      </div>
-    )}
-
-  </div>
-
-  {/* Variants + Wishlist */}
-  <div className="mt-4 sm:mt-6 space-y-3">
-
-    <ProductVariantsSelector
-      product={product}
-      variants={variants || []}
-      unitLabel={unitLabel}
-    />
-
-    <ProductQuoteBox locale={locale} />
-
-  </div>
-
-</div>
-
-      </div>
+      <ProductDetailsClient
+  product={product}
+  variants={variants || []}
+  unitLabel={unitLabel}
+  locale={locale}
+/>
 
       {/* ================= Tabs ================= */}
       <div className="mt-8 sm:mt-12">
