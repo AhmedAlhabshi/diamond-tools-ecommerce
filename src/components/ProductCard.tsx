@@ -47,7 +47,7 @@ console.log(product)
       <div className="group relative h-28 sm:h-32 bg-transparent flex items-center justify-center p-3 overflow-hidden">
 
 {product.brand?.image && (
-<div className="absolute -top-3 -left-0 z-30">
+<div className="absolute -top-3 left-1 z-30">
   <img
     src={product.brand.image}
     alt={product.brand.name_en || "Brand"}

@@ -17,47 +17,53 @@ export async function getProducts(options?: {
   price?: string
   search?: string
 }) {
-
   const supabase = await createClient()
 
-let query = supabase
-  .from('products')
-  .select(`
-    *,
-    product_variants!product_variants_product_id_fkey(*)
-  `)
-  .eq("is_active", true)
-.order('category_sort_order', { ascending: true })
-.order('created_at', { ascending: false })
+  let categoryProductOrderMap = new Map<string, number>()
 
-if (options?.categoryId) {
-  const { data: productCategoryRows } = await supabase
-    .from("product_categories")
-    .select("product_id")
-    .eq("category_id", options.categoryId)
+  let query = supabase
+    .from("products")
+    .select(`
+      *,
+      product_variants!product_variants_product_id_fkey(*)
+    `)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
 
-  const productIds =
-    productCategoryRows?.map((row) => row.product_id) || []
+  if (options?.categoryId) {
+    const { data: productCategoryRows } = await supabase
+      .from("product_categories")
+      .select("product_id, sort_order")
+      .eq("category_id", options.categoryId)
+      .order("sort_order", { ascending: true })
 
-  if (productIds.length === 0) {
-    return []
+    const productIds =
+      productCategoryRows?.map((row: any) => row.product_id) || []
+
+    categoryProductOrderMap = new Map(
+      productCategoryRows?.map((row: any) => [
+        String(row.product_id),
+        row.sort_order ?? 999,
+      ]) || []
+    )
+
+    if (productIds.length === 0) return []
+
+    query = query.in("id", productIds)
   }
 
-  query = query.in("id", productIds)
-}
-
   if (options?.brandId) {
-    query = query.eq('brand_id', options.brandId)
+    query = query.eq("brand_id", options.brandId)
   }
 
   if (options?.price) {
-    if (options.price.includes('-')) {
-      const [min, max] = options.price.split('-')
+    if (options.price.includes("-")) {
+      const [min, max] = options.price.split("-")
       query = query
-        .gte('individual_price', Number(min))
-        .lte('individual_price', Number(max))
+        .gte("individual_price", Number(min))
+        .lte("individual_price", Number(max))
     } else {
-      query = query.gte('individual_price', Number(options.price))
+      query = query.gte("individual_price", Number(options.price))
     }
   }
 
@@ -70,39 +76,58 @@ if (options?.categoryId) {
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching products:', error)
+    console.error("Error fetching products:", error)
     return []
   }
 
-  const brandIds = [
-  ...new Set((data || []).map((p: any) => p.brand_id).filter(Boolean)),
-]
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, sort_order")
 
-const { data: brands } = await supabase
-  .from("brands")
-  .select("*")
+  const categoryOrderMap = new Map(
+    categories?.map((cat: any) => [
+      String(cat.id),
+      cat.sort_order ?? 999,
+    ]) || []
+  )
 
-const brandsMap = new Map(
-  brands?.map((brand: any) => [String(brand.id), brand]) || []
-)
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("*")
 
-  // 🔥 ADD THIS PART (IMPORTANT)
   const formatted = data?.map((product: any) => {
+    const variants = product.product_variants || []
 
-    let lowestVariant = null
+    const lowestVariant =
+      variants.length > 0
+        ? variants.reduce((min: any, current: any) =>
+            current.price < min.price ? current : min
+          )
+        : null
 
-    if (product.product_variants?.length > 0) {
-      lowestVariant = product.product_variants.reduce((min: any, current: any) =>
-        current.price < min.price ? current : min
-      )
+    return {
+      ...product,
+      brand: brands?.find((b: any) => String(b.id) === String(product.brand_id)) || null,
+      variant: lowestVariant,
+    }
+  })
+
+  formatted?.sort((a: any, b: any) => {
+    if (options?.categoryId) {
+      const aOrder = categoryProductOrderMap.get(String(a.id)) ?? 999
+      const bOrder = categoryProductOrderMap.get(String(b.id)) ?? 999
+
+      if (aOrder !== bOrder) return aOrder - bOrder
     }
 
-return {
-  ...product,
-  brand:
-    brands?.find((b: any) => b.id === product.brand_id) || null,
-  variant: lowestVariant,
-}
+    const aCategoryOrder = categoryOrderMap.get(String(a.category_id)) ?? 999
+    const bCategoryOrder = categoryOrderMap.get(String(b.category_id)) ?? 999
+
+    if (aCategoryOrder !== bCategoryOrder) {
+      return aCategoryOrder - bCategoryOrder
+    }
+
+    return (a.category_sort_order ?? 999) - (b.category_sort_order ?? 999)
   })
 
   return formatted || []

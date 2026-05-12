@@ -29,11 +29,11 @@ export default function CategoryProductsPage() {
       .eq("id", categoryId)
       .single()
 
-    // ✅ Get products from product_categories table
     const { data: productCategoryRows } = await supabase
       .from("product_categories")
-      .select("product_id")
+      .select("product_id, sort_order")
       .eq("category_id", categoryId)
+      .order("sort_order", { ascending: true })
 
     const productIds =
       productCategoryRows?.map((row: any) => row.product_id) || []
@@ -43,13 +43,18 @@ export default function CategoryProductsPage() {
     if (productIds.length > 0) {
       const { data } = await supabase
         .from("products")
-        .select("id, name_en, name_ar, images, category_sort_order")
+        .select("id, name_en, name_ar, images")
         .in("id", productIds)
         .eq("is_active", true)
-        .order("category_sort_order", { ascending: true })
-        .order("created_at", { ascending: false })
 
-      productsData = data || []
+      const productsMap = new Map(
+        data?.map((product: any) => [product.id, product]) || []
+      )
+
+      productsData =
+        productCategoryRows
+          ?.map((row: any) => productsMap.get(row.product_id))
+          .filter(Boolean) || []
     }
 
     setCategory(categoryData)
@@ -72,9 +77,10 @@ export default function CategoryProductsPage() {
 
     for (let i = 0; i < items.length; i++) {
       await supabase
-        .from("products")
-        .update({ category_sort_order: i })
-        .eq("id", items[i].id)
+        .from("product_categories")
+        .update({ sort_order: i })
+        .eq("category_id", categoryId)
+        .eq("product_id", items[i].id)
     }
   }
 

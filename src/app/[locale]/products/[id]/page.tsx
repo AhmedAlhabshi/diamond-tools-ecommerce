@@ -120,45 +120,57 @@ const unitLabel = tUnits(unitKey);
         {/* LEFT - Images */}
         <ProductGallery images={product.images || []} />
 
-        {/* RIGHT - Info */}
-        <div className="space-y-4 sm:space-y-6">
+{/* RIGHT - Info */}
+<div className="space-y-2 sm:space-y-3">
 
-          {/* Brand */}
-<Link
-  href={`/products?brand=${brand?.id}`}
-  className="
-    text-sm uppercase tracking-widest 
-    text-black font-semibold 
-    underline 
-    hover:text-blue-600 transition
-  "
->
-  {brandName}
-</Link>
+  {/* Brand + Title */}
+  <div className="flex items-center justify-between gap-4">
 
-          {/* Title */}
-          <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-tight">
-            {productName}
-          </h1>
+    <div>
+      <Link
+        href={`/products?brand=${brand?.id}`}
+        className="
+          text-sm uppercase tracking-widest 
+          text-black font-semibold 
+          underline 
+          hover:text-blue-600 transition
+          block mb-1
+        "
+      >
+        {brandName}
+      </Link>
 
-          {/* Variants + Wishlist */}
-          <div className="mt-4 sm:mt-6 space-y-3">
+      <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
+        {productName}
+      </h1>
+    </div>
 
-<ProductVariantsSelector
-  product={product}
-  variants={variants || []}
-  unitLabel={unitLabel}
-/>
+    {brand?.image && (
+      <div className="shrink-0 flex items-center">
+        <img
+          src={brand.image}
+          alt={brandName || "Brand"}
+          className="w-32 sm:w-40 object-contain"
+        />
+      </div>
+    )}
 
-<ProductQuoteBox locale={locale} />
+  </div>
 
-           
+  {/* Variants + Wishlist */}
+  <div className="mt-4 sm:mt-6 space-y-3">
 
-          </div>
+    <ProductVariantsSelector
+      product={product}
+      variants={variants || []}
+      unitLabel={unitLabel}
+    />
 
-          
+    <ProductQuoteBox locale={locale} />
 
-        </div>
+  </div>
+
+</div>
 
       </div>
 

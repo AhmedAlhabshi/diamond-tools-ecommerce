@@ -147,7 +147,7 @@ export default async function ProductsPage({
   className="relative bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
 >
   {product.brand?.image && (
-<div className="absolute -top-3 -left-0 z-30">
+<div className="absolute -top-3 left-1 z-30">
   <img
     src={product.brand.image}
     alt={product.brand.name_en || "Brand"}
