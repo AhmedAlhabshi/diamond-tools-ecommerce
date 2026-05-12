@@ -33,12 +33,45 @@ const productName = isArabic
 {/* RIGHT */}
 <div className="space-y-2 sm:space-y-3">
 
-  {/* Title */}
+{/* Brand + Title */}
+<div className="flex items-center justify-between gap-4">
+
   <div>
+
+   {product.brand?.name && (
+  <Link
+    href={`/products?brand=${product.brand.id}`}
+    className="
+      text-sm uppercase tracking-widest
+      text-black font-semibold
+      underline
+      hover:text-blue-600 transition
+      block mb-1
+    "
+  >
+    {isArabic
+      ? product.brand.name_ar || product.brand.name
+      : product.brand.name}
+  </Link>
+)}
+
     <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
       {productName}
     </h1>
+
   </div>
+
+  {product.brand?.image && (
+    <div className="shrink-0 flex items-center">
+      <img
+        src={product.brand.image}
+        alt="Brand"
+        className="w-32 sm:w-40 object-contain"
+      />
+    </div>
+  )}
+
+</div>
 
   {/* Variants */}
   <div className="mt-4 sm:mt-6 space-y-3">

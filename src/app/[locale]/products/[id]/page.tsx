@@ -116,8 +116,11 @@ const unitLabel = tUnits(unitKey);
       </div>
 
       {/* ================= MAIN ================= */}
-      <ProductDetailsClient
-  product={product}
+<ProductDetailsClient
+  product={{
+    ...product,
+    brand,
+  }}
   variants={variants || []}
   unitLabel={unitLabel}
   locale={locale}
