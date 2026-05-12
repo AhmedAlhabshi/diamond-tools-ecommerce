@@ -73,11 +73,18 @@ export default async function CategoriesPage({
 
                 </div>
 
-                <h3 className="font-semibold text-sm mb-1">
+                <h3 className="
+  text-sm sm:text-base
+  font-medium
+  tracking-wide
+  leading-relaxed
+  text-gray-800
+  text-center
+">
                   {getName(cat)}
                 </h3>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 text-center mt-1">
                   {t("explore")}
                 </p>
 
