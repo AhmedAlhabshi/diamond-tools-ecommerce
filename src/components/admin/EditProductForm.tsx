@@ -13,7 +13,8 @@ export default function EditProductForm({
   brands,
   allProducts,
   relatedIds,
-  selectedCategoryIds = [],
+selectedCategoryIds = [],
+selectedBrandIds = [],
 }: any) {
   const [descriptionEn, setDescriptionEn] = useState(product.description_en || "")
   const [descriptionAr, setDescriptionAr] = useState(product.description_ar || "")
@@ -95,17 +96,51 @@ export default function EditProductForm({
         </div>
       </div>
 
-      <div>
-        <label>Brand</label>
-        <select name="brand_id" defaultValue={product.brand_id || ""} className="w-full border p-2 rounded">
-          <option value="">Select Brand</option>
-          {brands?.map((brand: any) => (
-            <option key={brand.id} value={brand.id}>
-              {brand.name}
-            </option>
-          ))}
-        </select>
-      </div>
+<div>
+  <label>Main Brand</label>
+
+  <select
+    name="brand_id"
+    defaultValue={product.brand_id || ""}
+    className="w-full border p-2 rounded"
+  >
+    <option value="">Select Brand</option>
+
+    {brands?.map((brand: any) => (
+      <option key={brand.id} value={brand.id}>
+        {brand.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+<div className="border rounded-lg p-4 bg-slate-50">
+  <h3 className="font-semibold mb-3 text-slate-800">
+    Additional Brands
+  </h3>
+
+  <div className="grid grid-cols-2 gap-2">
+    {brands
+      ?.filter((brand: any) => brand.id !== product.brand_id)
+      .map((brand: any) => (
+        <label
+          key={brand.id}
+          className="flex items-center gap-2 text-sm"
+        >
+          <input
+            type="checkbox"
+            name="brand_ids"
+            value={brand.id}
+            defaultChecked={selectedBrandIds.includes(String(brand.id))}
+          />
+
+          {brand.name}
+        </label>
+      ))}
+  </div>
+</div>
+
+
 
       <div>
         <label>Stock</label>

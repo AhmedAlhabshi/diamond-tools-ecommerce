@@ -49,11 +49,29 @@ export default async function ProductPage({
     .single();
 
   // Brand
-  const { data: brand } = await supabase
-    .from("brands")
-    .select("*")
-    .eq("id", product.brand_id)
-    .single();
+// Main Brand
+const { data: brand } = await supabase
+  .from("brands")
+  .select("*")
+  .eq("id", product.brand_id)
+  .single();
+
+// Additional Brands
+const { data: productBrands } = await supabase
+  .from("product_brands")
+  .select(`
+    brand:brands(*)
+  `)
+  .eq("product_id", product.id);
+
+const extraBrands =
+  productBrands?.map((item: any) => item.brand).filter(Boolean) || [];
+
+const allBrands = [brand, ...extraBrands].filter(
+  (brandItem, index, self) =>
+    brandItem &&
+    index === self.findIndex((b: any) => b.id === brandItem.id)
+);
 
   /* ================= LANGUAGE LOGIC ================= */
 
@@ -120,6 +138,7 @@ const unitLabel = tUnits(unitKey);
   product={{
     ...product,
     brand,
+    brands: allBrands,
   }}
   variants={variants || []}
   unitLabel={unitLabel}

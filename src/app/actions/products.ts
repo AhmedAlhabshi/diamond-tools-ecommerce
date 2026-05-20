@@ -53,8 +53,36 @@ export async function getProducts(options?: {
   }
 
   if (options?.brandId) {
-    query = query.eq("brand_id", options.brandId)
+
+  const { data: productBrandRows } = await supabase
+    .from("product_brands")
+    .select("product_id")
+    .eq("brand_id", options.brandId)
+
+  const additionalBrandProductIds =
+    productBrandRows?.map((row: any) => row.product_id) || []
+
+  const { data: mainBrandProducts } = await supabase
+    .from("products")
+    .select("id")
+    .eq("brand_id", options.brandId)
+
+  const mainBrandProductIds =
+    mainBrandProducts?.map((p: any) => p.id) || []
+
+  const allProductIds = [
+    ...new Set([
+      ...mainBrandProductIds,
+      ...additionalBrandProductIds,
+    ]),
+  ]
+
+  if (allProductIds.length === 0) {
+    return []
   }
+
+  query = query.in("id", allProductIds)
+}
 
   if (options?.price) {
     if (options.price.includes("-")) {
@@ -95,6 +123,13 @@ export async function getProducts(options?: {
     .from("brands")
     .select("*")
 
+  const { data: productBrands } = await supabase
+    .from("product_brands")
+    .select(`
+      product_id,
+      brand:brands(*)
+    `)
+
   const formatted = data?.map((product: any) => {
     const variants = product.product_variants || []
 
@@ -105,9 +140,26 @@ export async function getProducts(options?: {
           )
         : null
 
+    const mainBrand =
+      brands?.find((b: any) => String(b.id) === String(product.brand_id)) ||
+      null
+
+    const extraBrands =
+      productBrands
+        ?.filter((pb: any) => String(pb.product_id) === String(product.id))
+        ?.map((pb: any) => pb.brand)
+        ?.filter(Boolean) || []
+
+    const allBrands = [mainBrand, ...extraBrands].filter(
+      (brand, index, self) =>
+        brand &&
+        index === self.findIndex((b: any) => b.id === brand.id)
+    )
+
     return {
       ...product,
-      brand: brands?.find((b: any) => String(b.id) === String(product.brand_id)) || null,
+      brand: mainBrand,
+      brands: allBrands,
       variant: lowestVariant,
     }
   })
@@ -302,6 +354,34 @@ if (orderedImages.length > 0) {
       product_id: id,
       category_id: categoryId,
     }))
+
+    const selectedBrandIds = formData
+  .getAll("brand_ids")
+  .map(String)
+  .filter(Boolean)
+
+// Remove old brands
+await supabase
+  .from("product_brands")
+  .delete()
+  .eq("product_id", id)
+
+// Insert selected brands
+if (selectedBrandIds.length > 0) {
+  const brandInserts = selectedBrandIds.map((brandId) => ({
+    product_id: id,
+    brand_id: brandId,
+  }))
+
+  const { error: brandError } = await supabase
+    .from("product_brands")
+    .insert(brandInserts)
+
+  if (brandError) {
+    console.error("BRAND UPDATE ERROR:", brandError)
+    throw new Error("Failed to update additional brands")
+  }
+}
 
     const { error: categoryError } = await supabase
       .from("product_categories")

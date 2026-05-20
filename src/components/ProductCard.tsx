@@ -46,14 +46,17 @@ console.log(product)
       {/* ================= IMAGE ================= */}
       <div className="group relative h-28 sm:h-32 bg-transparent flex items-center justify-center p-3 overflow-hidden">
 
-{product.brand?.image && (
-<div className="absolute -top-2 left-1 z-30">
-  <img
-    src={product.brand.image}
-    alt={product.brand.name_en || "Brand"}
-    className="w-14 h-14 object-contain"
-  />
-</div>
+{product.brands?.length > 0 && (
+  <div className="absolute -top-2 left-1 right-1 z-10 flex justify-between items-start pointer-events-none">
+    {product.brands.map((brand: any) => (
+      <img
+        key={brand.id}
+        src={brand.image}
+        alt={brand.name_en || "Brand"}
+        className="w-12 h-12 object-contain"
+      />
+    ))}
+  </div>
 )}
 
 {product.images?.[0] ? (
@@ -77,7 +80,7 @@ console.log(product)
 )}
 
         {/* 🔥 DESKTOP HOVER */}
-<div className="hidden sm:flex absolute inset-0 
+<div className="hidden sm:flex absolute inset-0 z-20
   opacity-0 group-hover:opacity-100
   transition duration-300
   flex-col justify-between p-2">

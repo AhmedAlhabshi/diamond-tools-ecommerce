@@ -34,26 +34,28 @@ const productName = isArabic
 <div className="space-y-2 sm:space-y-3">
 
 {/* Brand + Title */}
-<div className="flex items-center justify-between gap-4">
+<div className="flex items-start justify-between gap-4">
 
-  <div>
+  <div className="flex-1 min-w-0">
 
-   {product.brand?.name && (
-  <Link
-    href={`/products?brand=${product.brand.id}`}
-    className="
-      text-sm uppercase tracking-widest
-      text-black font-semibold
-      underline
-      hover:text-blue-600 transition
-      block mb-1
-    "
-  >
-    {isArabic
-      ? product.brand.name_ar || product.brand.name
-      : product.brand.name}
-  </Link>
-)}
+    <div className="flex flex-wrap gap-2 mb-1">
+      {product.brands?.map((brand: any) => (
+        <Link
+          key={brand.id}
+          href={`/products?brand=${brand.id}`}
+          className="
+            text-sm uppercase tracking-widest
+            text-black font-semibold
+            underline
+            hover:text-blue-600 transition
+          "
+        >
+          {isArabic
+            ? brand.name_ar || brand.name
+            : brand.name}
+        </Link>
+      ))}
+    </div>
 
     <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
       {productName}
@@ -61,13 +63,16 @@ const productName = isArabic
 
   </div>
 
-  {product.brand?.image && (
-    <div className="shrink-0 flex items-center">
-      <img
-        src={product.brand.image}
-        alt="Brand"
-        className="w-32 sm:w-40 object-contain"
-      />
+  {product.brands?.length > 0 && (
+    <div className="shrink-0 grid grid-cols-2 gap-3 items-center">
+      {product.brands.map((brand: any) => (
+        <img
+          key={brand.id}
+          src={brand.image}
+          alt="Brand"
+          className="w-20 sm:w-28 object-contain"
+        />
+      ))}
     </div>
   )}
 

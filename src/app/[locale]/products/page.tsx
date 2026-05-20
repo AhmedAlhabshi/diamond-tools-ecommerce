@@ -146,15 +146,20 @@ export default async function ProductsPage({
   key={product.id}
   className="relative bg-white border rounded-xl p-3 sm:p-4 flex flex-col h-full"
 >
-  {product.brand?.image && (
-<div className="absolute -top-2 left-1 z-30">
-  <img
-    src={product.brand.image}
-    alt={product.brand.name_en || "Brand"}
-    className="w-14 h-14 object-contain"
-  />
-</div>
+  {product.brands?.length > 0 && (
+    <div className="absolute -top-2 left-1 right-1 z-30 flex justify-between items-start">
+      {product.brands.map((brand: any) => (
+        <img
+          key={brand.id}
+          src={brand.image}
+          alt={brand.name_en || "Brand"}
+          className="w-12 h-12 object-contain"
+        />
+      ))}
+    </div>
   )}
+
+  
 
   <Link href={`/products/${product.id}`}>
 

@@ -34,6 +34,7 @@ export default function AddProductPage() {
   const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [subCategoryId, setSubCategoryId] = useState("")
   const [brandId, setBrandId] = useState("")
+const [brandIds, setBrandIds] = useState<string[]>([])
 
   const [images, setImages] = useState<File[]>([])
 
@@ -75,6 +76,14 @@ export default function AddProductPage() {
         : [...prev, id]
     )
   }
+
+  const toggleExtraBrand = (id: string) => {
+  setBrandIds((prev) =>
+    prev.includes(id)
+      ? prev.filter((brandId) => brandId !== id)
+      : [...prev, id]
+  )
+}
 
   const uploadImages = async () => {
     if (!images.length) return []
@@ -163,6 +172,21 @@ export default function AddProductPage() {
           console.error("Product categories insert error:", categoryError)
         }
       }
+
+      if (brandIds.length > 0) {
+  const brandInserts = brandIds.map((brandId) => ({
+    product_id: data.id,
+    brand_id: brandId,
+  }))
+
+  const { error: brandError } = await supabase
+    .from("product_brands")
+    .insert(brandInserts)
+
+  if (brandError) {
+    console.error("Product brands insert error:", brandError)
+  }
+}
 
       router.push(`/admin/products/${data.id}/variants`)
     } catch (err) {
@@ -278,6 +302,30 @@ export default function AddProductPage() {
             </option>
           ))}
         </select>
+
+        <div className="border rounded-lg p-4 bg-slate-50">
+  <h3 className="font-semibold mb-3 text-slate-800">
+    Additional Brands
+  </h3>
+
+  <div className="grid grid-cols-2 gap-2">
+    {brands
+      .filter((brand: any) => brand.id !== brandId)
+      .map((brand: any) => (
+        <label
+          key={brand.id}
+          className="flex items-center gap-2 text-sm"
+        >
+          <input
+            type="checkbox"
+            checked={brandIds.includes(brand.id)}
+            onChange={() => toggleExtraBrand(brand.id)}
+          />
+          {brand.name}
+        </label>
+      ))}
+  </div>
+</div>
 
         <div>
           <label>Description English</label>
