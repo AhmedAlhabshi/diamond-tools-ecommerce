@@ -229,7 +229,11 @@ const OptionButton = ({ value, selected, available, onClick }: any) => (
                 value={d}
                 selected={selectedDiameter === d}
                 available={availableDiameters.has(String(d))}
-onClick={() => setSelectedDiameter(String(d))}
+onClick={() =>
+  setSelectedDiameter(
+    String(selectedDiameter) === String(d) ? null : String(d)
+  )
+}
               />
             ))}
           </div>
@@ -246,14 +250,126 @@ onClick={() => setSelectedDiameter(String(d))}
                 value={tVal}
                 selected={selectedThickness === tVal}
                 available={availableThickness.has(String(tVal))}
-onClick={() => setSelectedThickness(String(tVal))}
+onClick={() =>
+  setSelectedThickness(
+    String(selectedThickness) === String(tVal) ? null : String(tVal)
+  )
+}
               />
             ))}
           </div>
         </div>
       )}
 
-      {allMaterials.length > 1 && (
+     
+
+      {allLengths.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("length")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {allLengths.map((l) => (
+              <OptionButton
+                key={l}
+                value={l}
+                selected={selectedLength === l}
+                available={availableLengths.has(String(l))}
+onClick={() =>
+  setSelectedLength(
+    String(selectedLength) === String(l) ? null : String(l)
+  )
+}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allHoles.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("hole")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {allHoles.map((h) => (
+              <OptionButton
+                key={h}
+                value={h}
+                selected={selectedHole === h}
+                available={availableHoles.has(String(h))}
+onClick={() =>
+  setSelectedHole(
+    String(selectedHole) === String(h) ? null : String(h)
+  )
+}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allGrits.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("grit")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {allGrits.map((g) => (
+              <OptionButton
+                key={g}
+                value={g}
+                selected={selectedGrit === g}
+                available={availableGrits.has(String(g))}
+onClick={() =>
+  setSelectedGrit(
+    String(selectedGrit) === String(g) ? null : String(g)
+  )
+}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allMachines.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("machine")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {allMachines.map((m) => (
+              <OptionButton
+                key={m}
+                value={m}
+                selected={selectedMachine === m}
+                available={availableMachines.has(String(m))}
+onClick={() =>
+  setSelectedMachine(
+    String(selectedMachine) === String(m) ? null : String(m)
+  )
+}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allStands.length > 1 && (
+        <div>
+          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+            {isArabic ? "الحامل" : "Stand"}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {allStands.map((s) => (
+              <OptionButton
+                key={s}
+                value={s}
+                selected={selectedStand === s}
+                available={availableStands.has(String(s))}
+                onClick={() =>
+                  setSelectedStand(String(s) === String(selectedStand) ? null : String(s))
+                }
+              />
+            ))}
+          </div>
+        </div>
+
+      )}
+
+            {allMaterials.length > 1 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
             {isArabic ? "المادة" : "Material"}
@@ -287,95 +403,6 @@ onClick={() => setSelectedThickness(String(tVal))}
                 </button>
               )
             })}
-          </div>
-        </div>
-      )}
-
-      {allLengths.length > 1 && (
-        <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("length")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {allLengths.map((l) => (
-              <OptionButton
-                key={l}
-                value={l}
-                selected={selectedLength === l}
-                available={availableLengths.has(String(l))}
-onClick={() => setSelectedLength(String(l))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {allHoles.length > 1 && (
-        <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("hole")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {allHoles.map((h) => (
-              <OptionButton
-                key={h}
-                value={h}
-                selected={selectedHole === h}
-                available={availableHoles.has(String(h))}
-onClick={() => setSelectedHole(String(h))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {allGrits.length > 1 && (
-        <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("grit")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {allGrits.map((g) => (
-              <OptionButton
-                key={g}
-                value={g}
-                selected={selectedGrit === g}
-                available={availableGrits.has(String(g))}
-onClick={() => setSelectedGrit(String(g))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {allMachines.length > 1 && (
-        <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("machine")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {allMachines.map((m) => (
-              <OptionButton
-                key={m}
-                value={m}
-                selected={selectedMachine === m}
-                available={availableMachines.has(String(m))}
-onClick={() => setSelectedMachine(String(m))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {allStands.length > 1 && (
-        <div>
-          <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
-            {isArabic ? "الحامل" : "Stand"}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {allStands.map((s) => (
-              <OptionButton
-                key={s}
-                value={s}
-                selected={selectedStand === s}
-                available={availableStands.has(String(s))}
-                onClick={() =>
-                  setSelectedStand(String(s) === String(selectedStand) ? null : String(s))
-                }
-              />
-            ))}
           </div>
         </div>
       )}
