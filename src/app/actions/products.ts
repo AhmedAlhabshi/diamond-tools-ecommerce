@@ -302,6 +302,7 @@ if (orderedImages.length > 0) {
   const updatedProduct = {
     name_ar: formData.get("name_ar"),
     name_en: formData.get("name_en"),
+    made_in: formData.get("made_in"),
 
     individual_price: Number(formData.get("individual_price")) || 0,
     discount_price: formData.get("discount_price")

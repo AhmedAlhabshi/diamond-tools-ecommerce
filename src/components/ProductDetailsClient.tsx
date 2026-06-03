@@ -57,9 +57,18 @@ const productName = isArabic
       ))}
     </div>
 
-    <h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
-      {productName}
-    </h1>
+<h1 className="text-2xl sm:text-4xl font-semibold text-black leading-none">
+  {productName}
+</h1>
+
+{product.made_in && (
+  <div className="mt-2 text-sm text-gray-600">
+    <span className="font-medium">
+      {isArabic ? "بلد الصنع:" : "Made in:"}
+    </span>{" "}
+    {product.made_in}
+  </div>
+)}
 
   </div>
 

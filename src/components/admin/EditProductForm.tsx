@@ -48,6 +48,16 @@ selectedBrandIds = [],
         </div>
       </div>
 
+      <div>
+  <label>Made In</label>
+  <input
+    name="made_in"
+    defaultValue={product.made_in || ""}
+    placeholder="e.g. Austria, Germany, Finland"
+    className="w-full border p-2 rounded"
+  />
+</div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label>Price</label>

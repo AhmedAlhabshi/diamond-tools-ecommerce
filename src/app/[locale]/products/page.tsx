@@ -178,9 +178,14 @@ export default async function ProductsPage({
 
 </div>
 
-    <h3 className="text-sm sm:text-base mb-2 line-clamp-2 min-h-[44px] text-center w-full">
-      {locale === 'ar' ? product.name_ar : product.name_en}
-    </h3>
+<h3 className="text-sm sm:text-base mb-1 text-center w-full">  {locale === 'ar' ? product.name_ar : product.name_en}
+</h3>
+
+{product.made_in && (
+  <p className="text-xs text-gray-500 text-center mb-2">
+    {locale === "ar" ? "بلد الصنع:" : "Made in:"} {product.made_in}
+  </p>
+)}
 
   </Link>
 

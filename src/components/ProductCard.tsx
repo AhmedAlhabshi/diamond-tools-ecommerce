@@ -6,18 +6,33 @@ import { PackageSearch, ShoppingCart, Heart, Eye } from "lucide-react"
 import { Link } from "@/i18n/routing"
 import ProductPrice from "@/components/product-price"
 import { toast } from "sonner"
+import { useState, useEffect } from "react"
 import { useLocale, useTranslations } from "next-intl"
+
+
+
 
 export default function ProductCard({ product, onQuickView }: any) {
 
-  const { addItem } = useCart()
-  const { toggleItem, isInWishlist } = useWishlist()
-  const inWishlist = isInWishlist(product.id)
+  const [mounted, setMounted] = useState(false)
+
+useEffect(() => {
+  setMounted(true)
+}, [])
+
+const { addItem } = useCart()
+const { toggleItem, isInWishlist } = useWishlist()
+
+const inWishlist =
+  mounted ? isInWishlist(product.id) : false
 
   const locale = useLocale()
   const isArabic = locale === "ar"
 
   const t = useTranslations("Product")
+  
+
+  
 
 
   /* ================= LANGUAGE FIX ================= */
@@ -33,7 +48,9 @@ const cheapestVariant = variants.length > 0
     , variants[0])
   : null
 
-console.log(product)
+  
+
+
 
   return (
 
@@ -180,7 +197,7 @@ console.log(product)
 
         <div className="p-3 sm:p-4 text-center cursor-pointer">
 
-          <h3
+<h3
   className="
     text-sm font-medium
     whitespace-nowrap
@@ -192,14 +209,18 @@ console.log(product)
   {productName}
 </h3>
 
-          <div className="mt-1 transition duration-300">
+{product.made_in && (
+  <p className="text-xs text-gray-500 mt-1">
+    {isArabic ? "بلد الصنع:" : "Made in:"} {product.made_in}
+  </p>
+)}
 
-            <ProductPrice
-              product={product}
-              variant={cheapestVariant}
-            />
-
-          </div>
+<div className="mt-1 transition duration-300">
+  <ProductPrice
+    product={product}
+    variant={cheapestVariant}
+  />
+</div>
 
         </div>
 

@@ -64,7 +64,7 @@ export default function CategorySlider({ children, id, locale }: any) {
   }, [isRTL]);
 
   return (
-    <div className="relative">
+   <div className="relative">
 
       {/* LEFT BUTTON */}
       <button
@@ -74,13 +74,17 @@ export default function CategorySlider({ children, id, locale }: any) {
             behavior: "smooth",
           });
         }}
-        className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 
-        bg-white/90 backdrop-blur-md 
-        shadow-lg border 
-        p-2 rounded-full 
-        hover:scale-110"
+className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-50
+w-10 h-10 items-center justify-center
+bg-white/95 backdrop-blur
+border border-gray-200 shadow-md
+rounded-full
+text-gray-700
+hover:bg-blue-600 hover:text-white hover:border-blue-600
+hover:scale-105
+transition-all duration-200"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-4 h-4" />
       </button>
 
       {/* SLIDER */}
@@ -101,13 +105,17 @@ export default function CategorySlider({ children, id, locale }: any) {
             behavior: "smooth",
           });
         }}
-        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 
-        bg-white/90 backdrop-blur-md 
-        shadow-lg border 
-        p-2 rounded-full 
-        hover:scale-110"
+className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-50
+w-10 h-10 items-center justify-center
+bg-white/95 backdrop-blur
+border border-gray-200 shadow-md
+rounded-full
+text-gray-700
+hover:bg-blue-600 hover:text-white hover:border-blue-600
+hover:scale-105
+transition-all duration-200"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-4 h-4" />
       </button>
 
     </div>
