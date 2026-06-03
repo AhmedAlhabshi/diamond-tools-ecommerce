@@ -58,6 +58,16 @@ selectedBrandIds = [],
   />
 </div>
 
+<div>
+  <label>Product Code</label>
+  <input
+    name="product_code"
+    defaultValue={product.product_code || ""}
+    placeholder="e.g. TYR-12345"
+    className="w-full border p-2 rounded"
+  />
+</div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label>Price</label>

@@ -26,6 +26,7 @@ export default function ProductVariantsPage() {
   const [descriptionAr, setDescriptionAr] = useState("")
   const [price, setPrice] = useState("")
   const [stock, setStock] = useState("")
+  const [variantCode, setVariantCode] = useState("")
 
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -53,6 +54,7 @@ export default function ProductVariantsPage() {
     setStock("")
     setEditingId(null)
     setVariantImage("")
+    setVariantCode("")
   }
 
   const fetchVariants = async () => {
@@ -134,6 +136,7 @@ setProductImages(productData?.images || [])
       price: Number(price),
       stock: stock ? Number(stock) : 0,
       variant_image: variantImage,
+      variant_code: variantCode,
     }
 
     let error
@@ -369,6 +372,13 @@ setProductImages(productData?.images || [])
         />
 
         <input
+  placeholder="Variant Code (e.g. GW-100-6-16)"
+  value={variantCode}
+  onChange={(e) => setVariantCode(e.target.value)}
+  className="w-full border p-2 rounded"
+/>
+
+        <input
           placeholder="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
@@ -467,6 +477,7 @@ setProductImages(productData?.images || [])
                   <td className="p-3">{v.stand || "-"}</td>
                   <td className="p-3 max-w-[180px] truncate">{v.description_en || "-"}</td>
                   <td className="p-3 max-w-[180px] truncate text-right" dir="rtl">{v.description_ar || "-"}</td>
+                  <td className="p-3">{v.variant_code || "-"}</td>
                   <td className="p-3">SAR {Number(v.price || 0).toFixed(2)}</td>
                   <td className="p-3">{v.stock ?? 0}</td>
 
@@ -489,6 +500,7 @@ setProductImages(productData?.images || [])
                         setRemoveMaterialIcon(false)
                         setDescriptionEn(v.description_en || "")
                         setDescriptionAr(v.description_ar || "")
+                        setVariantCode(v.variant_code || "")
                         setPrice(String(v.price || ""))
                         setStock(String(v.stock || ""))
                       }}

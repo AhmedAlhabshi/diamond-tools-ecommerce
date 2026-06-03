@@ -36,6 +36,7 @@ export default function AddProductPage() {
   const [brandId, setBrandId] = useState("")
 const [brandIds, setBrandIds] = useState<string[]>([])
 const [madeIn, setMadeIn] = useState("")
+const [productCode, setProductCode] = useState("")
 
   const [images, setImages] = useState<File[]>([])
 
@@ -123,6 +124,7 @@ const [madeIn, setMadeIn] = useState("")
           name_ar: nameAr,
           name_en: nameEn,
           made_in: madeIn,
+          product_code: productCode,
 
           individual_price: price ? Number(price) : null,
           discount_price: discountPrice ? Number(discountPrice) : null,
@@ -229,6 +231,16 @@ const [madeIn, setMadeIn] = useState("")
     value={madeIn}
     onChange={(e) => setMadeIn(e.target.value)}
     placeholder="e.g. Austria, Germany, Finland"
+    className="w-full border p-2 rounded"
+  />
+</div>
+
+<div>
+  <label>Product Code</label>
+  <input
+    value={productCode}
+    onChange={(e) => setProductCode(e.target.value)}
+    placeholder="e.g. TYR-12345"
     className="w-full border p-2 rounded"
   />
 </div>
