@@ -5,12 +5,16 @@ import { useLocale, useTranslations } from "next-intl";
 
 const brands = [
   "/brands/Tyrolit1.jpg",
+  "/brands/Mirka1.jpg",
   "/brands/Sundisc1.jpg",
   "/brands/starke1.jpg",
+  "/brands/KGS.png",
   "/brands/Saint-Gobain1.jpg",
-  "/brands/Mirka1.jpg",
+  "/brands/ABRA.png",
   "/brands/GrindoJet1.jpg",
   "/brands/Garryson1.jpg",
+  "/brands/flexipad.png",
+  "/brands/achilli.png",
   "/brands/Flexovit1.jpg",
   "/brands/Diewe1.jpg",
 ];
@@ -34,12 +38,12 @@ export default function AuthorizedBrands() {
         {/* 🔥 DESKTOP AUTO SCROLL */}
         <div className="hidden md:block relative w-full overflow-hidden">
 <div
-  className="flex gap-12 items-center will-change-transform"
+ className="flex gap-12 items-center will-change-transform w-max"
   style={{
     animation:
       locale === "ar"
-        ? "scroll-rtl 20s linear infinite"
-        : "scroll-ltr 20s linear infinite"
+        ? "scroll-rtl 15s linear infinite"
+        : "scroll-ltr 15s linear infinite"
   }}
 >
             {[...brands, ...brands].map((brand, index) => (

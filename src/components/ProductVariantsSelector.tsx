@@ -81,14 +81,14 @@ export default function ProductVariantsSelector({
   const allStands = sortOptions(cleanOptions("stand"))
 
   const activeOptionGroups = [
-    allDiameters.length > 1,
-    allThickness.length > 1,
-    allHoles.length > 1,
-    allGrits.length > 1,
-    allLengths.length > 1,
-    allMachines.length > 1,
-    allStands.length > 1,
-    allMaterials.length > 1,
+    allDiameters.length > 0,
+    allThickness.length > 0,
+    allHoles.length > 0,
+    allGrits.length > 0,
+    allLengths.length > 0,
+    allMachines.length > 0,
+    allStands.length > 0,
+    allMaterials.length > 0,
   ].filter(Boolean).length
 
   const shouldFilterOptions = activeOptionGroups > 1
@@ -219,7 +219,7 @@ const OptionButton = ({ value, selected, available, onClick }: any) => (
 
   return (
     <div className="space-y-6">
-      {allDiameters.length > 1 && (
+      {allDiameters.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("diameter")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -240,7 +240,7 @@ onClick={() =>
         </div>
       )}
 
-      {allThickness.length > 1 && (
+      {allThickness.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("thickness")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -263,7 +263,7 @@ onClick={() =>
 
      
 
-      {allLengths.length > 1 && (
+      {allLengths.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("length")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -284,7 +284,7 @@ onClick={() =>
         </div>
       )}
 
-      {allHoles.length > 1 && (
+      {allHoles.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("hole")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -305,7 +305,7 @@ onClick={() =>
         </div>
       )}
 
-      {allGrits.length > 1 && (
+      {allGrits.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("grit")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -326,7 +326,7 @@ onClick={() =>
         </div>
       )}
 
-      {allMachines.length > 1 && (
+      {allMachines.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">{t("machine")}</h3>
           <div className="flex flex-wrap gap-2">
@@ -347,7 +347,7 @@ onClick={() =>
         </div>
       )}
 
-      {allStands.length > 1 && (
+      {allStands.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
             {isArabic ? "الحامل" : "Stand"}
@@ -369,7 +369,7 @@ onClick={() =>
 
       )}
 
-            {allMaterials.length > 1 && (
+            {allMaterials.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
             {isArabic ? "المادة" : "Material"}
