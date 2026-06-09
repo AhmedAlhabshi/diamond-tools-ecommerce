@@ -14,7 +14,7 @@ const brands = [
   "/brands/GrindoJet1.jpg",
   "/brands/Garryson1.jpg",
   "/brands/flexipad.png",
-  "/brands/achilli.png",
+  "/brands/Achilli.png",
   "/brands/Flexovit1.jpg",
   "/brands/Diewe1.jpg",
 ];
