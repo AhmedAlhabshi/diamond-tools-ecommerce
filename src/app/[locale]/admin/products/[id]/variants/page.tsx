@@ -22,11 +22,17 @@ export default function ProductVariantsPage() {
   const [materialIconFile, setMaterialIconFile] = useState<File | null>(null)
   const [materialIconUrl, setMaterialIconUrl] = useState("")
   const [removeMaterialIcon, setRemoveMaterialIcon] = useState(false)
+  const [qualityNameEn, setQualityNameEn] = useState("")
+const [qualityNameAr, setQualityNameAr] = useState("")
+const [qualityIconFile, setQualityIconFile] = useState<File | null>(null)
+const [qualityIconUrl, setQualityIconUrl] = useState("")
+const [removeQualityIcon, setRemoveQualityIcon] = useState(false)
   const [descriptionEn, setDescriptionEn] = useState("")
   const [descriptionAr, setDescriptionAr] = useState("")
   const [price, setPrice] = useState("")
   const [stock, setStock] = useState("")
   const [variantCode, setVariantCode] = useState("")
+
 
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -42,6 +48,11 @@ export default function ProductVariantsPage() {
     setThickness("")
     setLength("")
     setMachine("")
+setQualityNameEn("")
+setQualityNameAr("")
+setQualityIconFile(null)
+setQualityIconUrl("")
+setRemoveQualityIcon(false)
     setStand("") 
     setMaterialNameEn("")
     setMaterialNameAr("")
@@ -120,6 +131,31 @@ setProductImages(productData?.images || [])
       finalMaterialIconUrl = data.publicUrl
     }
 
+
+    let finalQualityIconUrl = removeQualityIcon ? "" : qualityIconUrl
+
+if (qualityIconFile) {
+  const fileExt = qualityIconFile.name.split(".").pop()
+  const fileName = `variant-quality-icons/${crypto.randomUUID()}.${fileExt}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("products")
+    .upload(fileName, qualityIconFile)
+
+  if (uploadError) {
+    console.error(uploadError)
+    alert("Error uploading quality icon")
+    setLoading(false)
+    return
+  }
+
+  const { data } = supabase.storage
+    .from("products")
+    .getPublicUrl(fileName)
+
+  finalQualityIconUrl = data.publicUrl
+}
+
     const payload = {
       diameter,
       hole_size: holeSize,
@@ -128,6 +164,9 @@ setProductImages(productData?.images || [])
       length,
       machine,
       stand,
+      quality_name_en: qualityNameEn,
+quality_name_ar: qualityNameAr,
+quality_icon_url: finalQualityIconUrl,
       material_name_en: materialNameEn,
       material_name_ar: materialNameAr,
       material_icon_url: finalMaterialIconUrl,
@@ -199,6 +238,14 @@ setProductImages(productData?.images || [])
     setRemoveMaterialIcon(true)
   }
 
+  const clearQuality = () => {
+  setQualityNameEn("")
+  setQualityNameAr("")
+  setQualityIconFile(null)
+  setQualityIconUrl("")
+  setRemoveQualityIcon(true)
+}
+
   return (
     <div className="p-8 bg-slate-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Manage Variants</h1>
@@ -219,12 +266,20 @@ setProductImages(productData?.images || [])
           className="w-full border p-2 rounded"
         />
 
+                <input
+          placeholder="Thickness (e.g. 2mm)"
+          value={thickness}
+          onChange={(e) => setThickness(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+
         <input
           placeholder="Hole Size (e.g. 16mm)"
           value={holeSize}
           onChange={(e) => setHoleSize(e.target.value)}
           className="w-full border p-2 rounded"
         />
+      
 
         <input
           placeholder="Grit (e.g. 60)"
@@ -233,12 +288,7 @@ setProductImages(productData?.images || [])
           className="w-full border p-2 rounded"
         />
 
-        <input
-          placeholder="Thickness (e.g. 2mm)"
-          value={thickness}
-          onChange={(e) => setThickness(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
+
 
         <input
           placeholder="Length (e.g. 300mm)"
@@ -354,6 +404,75 @@ setProductImages(productData?.images || [])
       </button>
     ))}
   </div>
+
+</div>
+
+  <div className="border rounded-lg p-4 space-y-3 bg-slate-50">
+  <h3 className="font-semibold text-slate-800">Quality</h3>
+
+  <input
+    placeholder="Quality Name English (e.g. Premium / Standard / Economy)"
+    value={qualityNameEn}
+    onChange={(e) => setQualityNameEn(e.target.value)}
+    className="w-full border p-2 rounded bg-white"
+  />
+
+  <input
+    placeholder="Quality Name Arabic (e.g. ممتاز / عادي / اقتصادي)"
+    value={qualityNameAr}
+    onChange={(e) => setQualityNameAr(e.target.value)}
+    className="w-full border p-2 rounded bg-white text-right"
+    dir="rtl"
+  />
+
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Quality Icon
+    </label>
+
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setQualityIconFile(file)
+        setQualityIconUrl(URL.createObjectURL(file))
+        setRemoveQualityIcon(false)
+      }}
+      className="w-full border p-2 rounded bg-white"
+    />
+
+    {qualityIconUrl && !removeQualityIcon && (
+      <div className="mt-3 flex items-center gap-3">
+        <img
+          src={qualityIconUrl}
+          alt="Quality icon"
+          className="w-12 h-12 object-contain border rounded p-1 bg-white"
+        />
+
+        <button
+          type="button"
+          onClick={() => {
+            setQualityIconFile(null)
+            setQualityIconUrl("")
+            setRemoveQualityIcon(true)
+          }}
+          className="text-sm text-red-600 hover:underline"
+        >
+          Delete Icon
+        </button>
+      </div>
+    )}
+  </div>
+
+  <button
+    type="button"
+    onClick={clearQuality}
+    className="text-sm bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+  >
+    Clear Quality
+  </button>
 </div>
 
         <textarea
@@ -425,61 +544,115 @@ setProductImages(productData?.images || [])
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-100">
-              <tr>
-                <th className="p-3 text-left">Material</th>
-                <th className="p-3 text-left">Diameter</th>
-                <th className="p-3 text-left">Hole Size</th>
-                <th className="p-3 text-left">Grit</th>
-                <th className="p-3 text-left">Thickness</th>
-                <th className="p-3 text-left">Length</th>
-                <th className="p-3 text-left">Machine</th>
-                <th className="p-3 text-left">Stand</th>
-                <th className="p-3 text-left">Description EN</th>
-                <th className="p-3 text-left">Description AR</th>
-                <th className="p-3 text-left">Price</th>
-                <th className="p-3 text-left">Stock</th>
-                <th className="p-3 text-left">Actions</th>
-              </tr>
+<tr>
+  <th className="p-3 text-left">Code</th>
+  <th className="p-3 text-left">Image</th>
+
+  <th className="p-3 text-left">Diameter</th>
+  <th className="p-3 text-left">Thickness</th>
+  <th className="p-3 text-left">Hole Size</th>
+  <th className="p-3 text-left">Grit</th>
+  <th className="p-3 text-left">Length</th>
+
+  <th className="p-3 text-left">Material</th>
+  <th className="p-3 text-left">Quality</th>
+
+  <th className="p-3 text-left">Machine</th>
+  <th className="p-3 text-left">Stand</th>
+
+  <th className="p-3 text-left">Price</th>
+  <th className="p-3 text-left">Stock</th>
+
+  <th className="p-3 text-left">Description EN</th>
+  <th className="p-3 text-left">Description AR</th>
+
+  <th className="p-3 text-left">Actions</th>
+</tr>
             </thead>
 
             <tbody>
               {variants.map((v) => (
                 <tr key={v.id} className="border-t">
-                  <td className="p-3">
-                    {(v.material_name_en || v.material_icon_url) ? (
-                      <div className="flex items-center gap-2">
-                        {v.material_icon_url && (
-                          <img
-                            src={v.material_icon_url}
-                            alt="Material icon"
-                            className="w-8 h-8 object-contain"
-                          />
-                        )}
-
-                        <div>
-                          <div>{v.material_name_en || "-"}</div>
-                          <div className="text-xs text-gray-500" dir="rtl">
-                            {v.material_name_ar || ""}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-
-                  <td className="p-3">{v.diameter || "-"}</td>
-                  <td className="p-3">{v.hole_size || "-"}</td>
-                  <td className="p-3">{v.grit || "-"}</td>
-                  <td className="p-3">{v.thickness || "-"}</td>
-                  <td className="p-3">{v.length || "-"}</td>
-                  <td className="p-3">{v.machine || "-"}</td>
-                  <td className="p-3">{v.stand || "-"}</td>
-                  <td className="p-3 max-w-[180px] truncate">{v.description_en || "-"}</td>
-                  <td className="p-3 max-w-[180px] truncate text-right" dir="rtl">{v.description_ar || "-"}</td>
                   <td className="p-3">{v.variant_code || "-"}</td>
-                  <td className="p-3">SAR {Number(v.price || 0).toFixed(2)}</td>
-                  <td className="p-3">{v.stock ?? 0}</td>
+
+<td className="p-3">
+  {v.variant_image ? (
+    <img
+      src={v.variant_image}
+      alt="Variant"
+      className="w-12 h-12 object-cover rounded"
+    />
+  ) : (
+    "-"
+  )}
+</td>
+
+<td className="p-3">{v.diameter || "-"}</td>
+<td className="p-3">{v.thickness || "-"}</td>
+<td className="p-3">{v.hole_size || "-"}</td>
+<td className="p-3">{v.grit || "-"}</td>
+<td className="p-3">{v.length || "-"}</td>
+
+<td className="p-3">
+  {(v.material_name_en || v.material_icon_url) ? (
+    <div className="flex items-center gap-2">
+      {v.material_icon_url && (
+        <img
+          src={v.material_icon_url}
+          alt="Material icon"
+          className="w-8 h-8 object-contain"
+        />
+      )}
+      <div>
+        <div>{v.material_name_en || "-"}</div>
+        <div className="text-xs text-gray-500" dir="rtl">
+          {v.material_name_ar || ""}
+        </div>
+      </div>
+    </div>
+  ) : (
+    "-"
+  )}
+</td>
+
+<td className="p-3">
+  {(v.quality_name_en || v.quality_icon_url) ? (
+    <div className="flex items-center gap-2">
+      {v.quality_icon_url && (
+        <img
+          src={v.quality_icon_url}
+          alt="Quality icon"
+          className="w-8 h-8 object-contain"
+        />
+      )}
+      <div>
+        <div>{v.quality_name_en || "-"}</div>
+        <div className="text-xs text-gray-500" dir="rtl">
+          {v.quality_name_ar || ""}
+        </div>
+      </div>
+    </div>
+  ) : (
+    "-"
+  )}
+</td>
+
+<td className="p-3">{v.machine || "-"}</td>
+<td className="p-3">{v.stand || "-"}</td>
+
+<td className="p-3">
+  SAR {Number(v.price || 0).toFixed(2)}
+</td>
+
+<td className="p-3">{v.stock ?? 0}</td>
+
+<td className="p-3 max-w-[180px] truncate">
+  {v.description_en || "-"}
+</td>
+
+<td className="p-3 max-w-[180px] truncate text-right" dir="rtl">
+  {v.description_ar || "-"}
+</td>
 
                   <td className="p-3">
                     <button
@@ -503,6 +676,11 @@ setProductImages(productData?.images || [])
                         setVariantCode(v.variant_code || "")
                         setPrice(String(v.price || ""))
                         setStock(String(v.stock || ""))
+                        setQualityNameEn(v.quality_name_en || "")
+setQualityNameAr(v.quality_name_ar || "")
+setQualityIconUrl(v.quality_icon_url || "")
+setQualityIconFile(null)
+setRemoveQualityIcon(false)
                       }}
                       className="text-blue-600 hover:underline mr-3"
                     >
@@ -521,7 +699,7 @@ setProductImages(productData?.images || [])
 
               {variants.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-4 text-center text-gray-500">
+                  <td colSpan={15} className="p-4 text-center text-gray-500">
                     No variants yet
                   </td>
                 </tr>

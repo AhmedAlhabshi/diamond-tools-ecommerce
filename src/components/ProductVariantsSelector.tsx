@@ -22,6 +22,7 @@ export default function ProductVariantsSelector({
   const [selectedMachine, setSelectedMachine] = useState<string | null>(null)
   const [selectedStand, setSelectedStand] = useState<string | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null)
+  const [selectedQuality, setSelectedQuality] = useState<string | null>(null)
 
   const cleanOptions = (field: string): string[] => {
     const options = variants
@@ -37,6 +38,11 @@ export default function ProductVariantsSelector({
       .trim()
       .toLowerCase()
   }
+  const getQualityKey = (v: any) => {
+  return String(v.quality_name_en || v.quality_name_ar || "")
+    .trim()
+    .toLowerCase()
+}
 
   const allMaterials = useMemo(() => {
     const map = new Map<string, any>()
@@ -58,6 +64,27 @@ export default function ProductVariantsSelector({
 
     return Array.from(map.values())
   }, [variants])
+
+  const allQualities = useMemo(() => {
+  const map = new Map<string, any>()
+
+  variants.forEach((v: any) => {
+    if (!v.quality_icon_url) return
+
+    const key = getQualityKey(v)
+
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        name_en: v.quality_name_en || "",
+        name_ar: v.quality_name_ar || "",
+        icon_url: v.quality_icon_url || "",
+      })
+    }
+  })
+
+  return Array.from(map.values())
+}, [variants])
 
   const sortOptions = (options: string[]) => {
     return [...options].sort((a, b) => {
@@ -89,6 +116,7 @@ export default function ProductVariantsSelector({
     allMachines.length > 0,
     allStands.length > 0,
     allMaterials.length > 0,
+    allQualities.length > 0,
   ].filter(Boolean).length
 
   const shouldFilterOptions = activeOptionGroups > 1
@@ -103,7 +131,9 @@ const getFilteredVariants = (ignoreField?: string) => {
       (ignoreField === "length" || !selectedLength || String(v.length) === String(selectedLength)) &&
       (ignoreField === "machine" || !selectedMachine || String(v.machine) === String(selectedMachine)) &&
       (ignoreField === "stand" || !selectedStand || String(v.stand) === String(selectedStand)) &&
+      (ignoreField === "quality" || !selectedQuality || getQualityKey(v) === selectedQuality) &&
       (ignoreField === "material" || !selectedMaterial || getMaterialKey(v) === selectedMaterial)
+      
   )
 }
 
@@ -119,6 +149,7 @@ const filteredVariants = useMemo(() => {
   selectedMachine,
   selectedStand,
   selectedMaterial,
+  selectedQuality,
 ])
 
 const cleanAvailable = (field: string): Set<string> => {
@@ -151,6 +182,28 @@ const availableMaterials = useMemo(() => {
   selectedMachine,
   selectedStand,
   selectedMaterial,
+])
+
+const availableQualities = useMemo(() => {
+  const set = new Set<string>()
+
+  getFilteredVariants("quality").forEach((v: any) => {
+    if (!v.quality_name_en && !v.quality_name_ar && !v.quality_icon_url) return
+    set.add(getQualityKey(v))
+  })
+
+  return set
+}, [
+  variants,
+  selectedDiameter,
+  selectedHole,
+  selectedGrit,
+  selectedThickness,
+  selectedLength,
+  selectedMachine,
+  selectedStand,
+  selectedMaterial,
+  selectedQuality,
 ])
 
   const availableDiameters = cleanAvailable("diameter")
@@ -188,6 +241,7 @@ const availableMaterials = useMemo(() => {
   (allLengths.length <= 1 || selectedLength) &&
   (allMachines.length <= 1 || selectedMachine) &&
   (allStands.length <= 1 || selectedStand) &&
+  (availableQualities.size <= 1 || selectedQuality) &&
   (availableMaterials.size <= 1 || selectedMaterial)
 
   const cartVariant = allRequiredOptionsSelected ? displayVariant : null
@@ -369,6 +423,44 @@ onClick={() =>
 
       )}
 
+      {allQualities.length > 0 && (
+  <div>
+    <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+      {isArabic ? "الجودة" : "Quality"}
+    </h3>
+
+    <div className="flex flex-wrap gap-4 items-center">
+      {allQualities.map((quality: any) => {
+        const selected = selectedQuality === quality.key
+        const available = availableQualities.has(quality.key)
+
+        return (
+          <button
+            key={quality.key}
+            onClick={() => setSelectedQuality(selected ? null : quality.key)}
+            disabled={!available}
+            className={`relative flex items-center justify-center ${
+              !available ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+          >
+            <img
+              src={quality.icon_url}
+              alt="quality"
+              className={`w-15 h-15 object-contain transition ${
+                selected ? "scale-110" : "hover:scale-105"
+              }`}
+            />
+
+            {selected && (
+              <span className="absolute inset-0 rounded-full border-2 border-blue-600" />
+            )}
+          </button>
+        )
+      })}
+    </div>
+  </div>
+)}
+
             {allMaterials.length > 0 && (
         <div>
           <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
@@ -405,6 +497,8 @@ onClick={() =>
             })}
           </div>
         </div>
+
+        
       )}
 
       {variantDescription && (

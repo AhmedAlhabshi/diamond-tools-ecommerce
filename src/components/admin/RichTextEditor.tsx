@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent, Extension } from "@tiptap/react";
+import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
@@ -10,6 +11,8 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
+import BaseImage from "@tiptap/extension-image";
+import { createClient } from "@/lib/supabase/client";
 
 const FontSize = Extension.create({
   name: "fontSize",
@@ -35,6 +38,89 @@ const FontSize = Extension.create({
   },
 });
 
+function ResizableImageComponent({ node, updateAttributes }: any) {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState(node.attrs.width || "100%");
+
+  const startResize = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
+    const startX = e.clientX;
+    const startWidth = wrapperRef.current?.offsetWidth || 300;
+
+    const onMouseMove = (event: MouseEvent) => {
+      const diff = event.clientX - startX;
+      const newWidth = Math.max(80, startWidth + diff);
+      setWidth(`${newWidth}px`);
+    };
+
+    const onMouseUp = () => {
+      updateAttributes({ width });
+
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  useEffect(() => {
+    setWidth(node.attrs.width || "100%");
+  }, [node.attrs.width]);
+
+  return (
+    <NodeViewWrapper
+      ref={wrapperRef}
+      className="relative inline-block my-4 group"
+      style={{ width }}
+    >
+      <img
+        src={node.attrs.src}
+        alt={node.attrs.alt || ""}
+        className="w-full h-auto rounded-lg border"
+      />
+
+      <div
+        onMouseDown={startResize}
+        className="
+          absolute right-0 bottom-0
+          w-4 h-4 bg-blue-600
+          cursor-se-resize
+          rounded-sm
+          opacity-0 group-hover:opacity-100
+        "
+        title="Drag to resize"
+      />
+    </NodeViewWrapper>
+  );
+}
+
+const ResizableImage = BaseImage.extend({
+  name: "image",
+
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: "100%",
+        parseHTML: (element) =>
+          element.getAttribute("width") || element.style.width || "100%",
+        renderHTML: (attributes) => {
+          return {
+            width: attributes.width,
+            style: `width: ${attributes.width}`,
+          };
+        },
+      },
+    };
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImageComponent);
+  },
+});
+
 export default function RichTextEditor({
   value,
   onChange,
@@ -47,6 +133,7 @@ export default function RichTextEditor({
   dir?: "ltr" | "rtl";
 }) {
   const isRTL = dir === "rtl";
+  const supabase = createClient();
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -66,6 +153,12 @@ export default function RichTextEditor({
       TextStyle,
       Color,
       Underline,
+
+      ResizableImage.configure({
+        inline: false,
+        allowBase64: false,
+      }),
+
       FontSize,
 
       Table.configure({
@@ -112,6 +205,35 @@ export default function RichTextEditor({
       active ? "bg-blue-600 text-white" : "bg-white text-slate-800"
     }`;
 
+  const uploadEditorImage = async (file: File) => {
+    if (!editor) return;
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `description-images/${crypto.randomUUID()}.${fileExt}`;
+
+    const { error } = await supabase.storage
+      .from("products")
+      .upload(fileName, file);
+
+    if (error) {
+      console.error(error);
+      alert("Error uploading image");
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
+
+    editor
+      .chain()
+      .focus()
+      .insertContent(
+        `<img src="${data.publicUrl}" style="width:100%" width="100%" />`
+      )
+      .run();
+  };
+
   return (
     <div className="border rounded overflow-hidden bg-white">
       <div className="flex gap-2 flex-wrap border-b bg-slate-50 p-2">
@@ -141,7 +263,9 @@ export default function RichTextEditor({
 
         <button
           type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           className={buttonClass(editor.isActive("heading", { level: 2 }))}
         >
           H2
@@ -149,7 +273,9 @@ export default function RichTextEditor({
 
         <button
           type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
           className={buttonClass(editor.isActive("heading", { level: 3 }))}
         >
           H3
@@ -213,6 +339,22 @@ export default function RichTextEditor({
           <option value="#16a34a">Green</option>
           <option value="#ca8a04">Gold</option>
         </select>
+
+        <label className="px-3 py-1 border rounded text-sm bg-white text-slate-800 cursor-pointer">
+          Image
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              await uploadEditorImage(file);
+              e.target.value = "";
+            }}
+          />
+        </label>
 
         <button
           type="button"
@@ -283,7 +425,9 @@ export default function RichTextEditor({
 
         <button
           type="button"
-          onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+          onClick={() =>
+            editor.chain().focus().unsetAllMarks().clearNodes().run()
+          }
           className="px-3 py-1 border rounded text-sm bg-white text-red-600"
         >
           Clear
