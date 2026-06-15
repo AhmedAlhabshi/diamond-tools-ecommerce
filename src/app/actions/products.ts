@@ -28,7 +28,8 @@ export async function getProducts(options?: {
       product_variants!product_variants_product_id_fkey(*)
     `)
     .eq("is_active", true)
-    .order("created_at", { ascending: false })
+    .order("all_products_sort_order", { ascending: true })
+.order("created_at", { ascending: false })
 
   if (options?.categoryId) {
     const { data: productCategoryRows } = await supabase
@@ -164,23 +165,21 @@ export async function getProducts(options?: {
     }
   })
 
-  formatted?.sort((a: any, b: any) => {
-    if (options?.categoryId) {
-      const aOrder = categoryProductOrderMap.get(String(a.id)) ?? 999
-      const bOrder = categoryProductOrderMap.get(String(b.id)) ?? 999
+formatted?.sort((a: any, b: any) => {
+  if (options?.categoryId) {
+    const aOrder = categoryProductOrderMap.get(String(a.id)) ?? 999
+    const bOrder = categoryProductOrderMap.get(String(b.id)) ?? 999
 
-      if (aOrder !== bOrder) return aOrder - bOrder
-    }
-
-    const aCategoryOrder = categoryOrderMap.get(String(a.category_id)) ?? 999
-    const bCategoryOrder = categoryOrderMap.get(String(b.category_id)) ?? 999
-
-    if (aCategoryOrder !== bCategoryOrder) {
-      return aCategoryOrder - bCategoryOrder
-    }
+    if (aOrder !== bOrder) return aOrder - bOrder
 
     return (a.category_sort_order ?? 999) - (b.category_sort_order ?? 999)
-  })
+  }
+
+  return (
+    (a.all_products_sort_order ?? 999) -
+    (b.all_products_sort_order ?? 999)
+  )
+})
 
   return formatted || []
 }
@@ -541,4 +540,36 @@ export async function deleteProductDownload(id: string, filePath: string) {
   if (error) {
     console.error("DELETE DOWNLOAD ERROR:", error)
   }
+}
+
+
+export async function updateAllProductsOrder(formData: FormData) {
+  const supabase = await createClient()
+
+  const productIds = formData.getAll("product_id").map(String)
+
+  for (const productId of productIds) {
+    const orderValue = Number(
+      formData.get(`all_products_sort_order_${productId}`) || 999
+    )
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        all_products_sort_order: orderValue,
+      })
+      .eq("id", productId)
+
+    if (error) {
+      console.error("ALL PRODUCTS ORDER UPDATE ERROR:", error)
+      throw new Error("Failed to update products order")
+    }
+  }
+
+  revalidatePath("/en/products")
+  revalidatePath("/ar/products")
+  revalidatePath("/en/admin/products/order")
+  revalidatePath("/ar/admin/products/order")
+
+  redirect("/en/admin/products/order?success=true")
 }
