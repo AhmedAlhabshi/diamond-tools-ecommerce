@@ -12,8 +12,6 @@ export default function AddToCartButton({
   quantity = 1,
   disabled,
   iconOnly = false,
-
-  // ✅ use true only for home/product cards
   redirectToProductOnMissingVariant = false,
 }: any) {
   const { addItem } = useCart()
@@ -31,7 +29,6 @@ export default function AddToCartButton({
   const hasVariants = product.product_variants?.length > 0
 
   const handleAddToCart = () => {
-    // ✅ Product has variants but user did not choose
     if (hasVariants && !variant) {
       toast.error(
         isArabic
@@ -47,36 +44,46 @@ export default function AddToCartButton({
       return
     }
 
-    // ✅ Product with selected variant
     if (variant) {
       addItem({
         product_id: product.id,
+        product_code: product.product_code || null,
+
         variant_id: variant.id,
+        variant_code: variant.variant_code || null,
+
         name: productName,
-        image: product.images?.[0],
+        image: variant.variant_image || product.images?.[0],
         price: variant.price,
         quantity,
 
         diameter: variant.diameter,
         thickness: variant.thickness,
+        width: variant.width,
+        length: variant.length,
         hole_size: variant.hole_size,
         grit: variant.grit,
-        length: variant.length,
         machine: variant.machine,
         stand: variant.stand,
 
         material_name_en: variant.material_name_en,
         material_name_ar: variant.material_name_ar,
+
+        quality_name_en: variant.quality_name_en,
+        quality_name_ar: variant.quality_name_ar,
       })
 
       toast.success(t("added"), { duration: 500 })
       return
     }
 
-    // ✅ Product without variants
     addItem({
       product_id: product.id,
+      product_code: product.product_code || null,
+
       variant_id: "default",
+      variant_code: null,
+
       name: productName,
       image: product.images?.[0],
       price: product.individual_price,
@@ -88,9 +95,10 @@ export default function AddToCartButton({
 
   return (
     <button
+      type="button"
       onClick={handleAddToCart}
       disabled={disabled}
-      aria-label={t("Add to Cart")}
+      aria-label={isArabic ? "أضف إلى السلة" : "Add to Cart"}
       className={`
         ${iconOnly ? "h-14 w-14" : "w-full h-12"}
         rounded-xl font-semibold transition flex items-center justify-center gap-2
@@ -103,7 +111,7 @@ export default function AddToCartButton({
     >
       <ShoppingCart className="w-5 h-5" />
 
-      {!iconOnly && <span>{t("Add to Cart")}</span>}
+      {!iconOnly && <span>{isArabic ? "أضف إلى السلة" : "Add to Cart"}</span>}
     </button>
   )
 }

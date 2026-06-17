@@ -14,6 +14,7 @@ export default function ProductVariantsPage() {
   const [holeSize, setHoleSize] = useState("")
   const [grit, setGrit] = useState("")
   const [thickness, setThickness] = useState("")
+  const [width, setWidth] = useState("")
   const [length, setLength] = useState("")
   const [machine, setMachine] = useState("")
   const [stand, setStand] = useState("") 
@@ -46,6 +47,7 @@ const [removeQualityIcon, setRemoveQualityIcon] = useState(false)
     setHoleSize("")
     setGrit("")
     setThickness("")
+    setWidth("")
     setLength("")
     setMachine("")
 setQualityNameEn("")
@@ -161,6 +163,7 @@ if (qualityIconFile) {
       hole_size: holeSize,
       grit,
       thickness,
+      width,
       length,
       machine,
       stand,
@@ -287,6 +290,13 @@ quality_icon_url: finalQualityIconUrl,
           onChange={(e) => setGrit(e.target.value)}
           className="w-full border p-2 rounded"
         />
+
+        <input
+  placeholder="Width (e.g. 100mm)"
+  value={width}
+  onChange={(e) => setWidth(e.target.value)}
+  className="w-full border p-2 rounded"
+/>
 
 
 
@@ -552,6 +562,7 @@ quality_icon_url: finalQualityIconUrl,
   <th className="p-3 text-left">Thickness</th>
   <th className="p-3 text-left">Hole Size</th>
   <th className="p-3 text-left">Grit</th>
+  <th className="p-3 text-left">Width</th>
   <th className="p-3 text-left">Length</th>
 
   <th className="p-3 text-left">Material</th>
@@ -591,6 +602,7 @@ quality_icon_url: finalQualityIconUrl,
 <td className="p-3">{v.thickness || "-"}</td>
 <td className="p-3">{v.hole_size || "-"}</td>
 <td className="p-3">{v.grit || "-"}</td>
+<td className="p-3">{v.width || "-"}</td>
 <td className="p-3">{v.length || "-"}</td>
 
 <td className="p-3">
@@ -662,6 +674,7 @@ quality_icon_url: finalQualityIconUrl,
                         setHoleSize(v.hole_size || "")
                         setGrit(v.grit || "")
                         setThickness(v.thickness || "")
+                        setWidth(v.width || "")
                         setLength(v.length || "")
                         setMachine(v.machine || "")
                         setStand(v.stand || "")
@@ -699,7 +712,7 @@ setRemoveQualityIcon(false)
 
               {variants.length === 0 && (
                 <tr>
-                  <td colSpan={15} className="p-4 text-center text-gray-500">
+                  <td colSpan={16} className="p-4 text-center text-gray-500">
                     No variants yet
                   </td>
                 </tr>

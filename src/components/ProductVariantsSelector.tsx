@@ -18,6 +18,7 @@ export default function ProductVariantsSelector({
   const [selectedHole, setSelectedHole] = useState<string | null>(null)
   const [selectedGrit, setSelectedGrit] = useState<string | null>(null)
   const [selectedThickness, setSelectedThickness] = useState<string | null>(null)
+  const [selectedWidth, setSelectedWidth] = useState<string | null>(null)
   const [selectedLength, setSelectedLength] = useState<string | null>(null)
   const [selectedMachine, setSelectedMachine] = useState<string | null>(null)
   const [selectedStand, setSelectedStand] = useState<string | null>(null)
@@ -103,6 +104,7 @@ export default function ProductVariantsSelector({
   const allThickness = sortOptions(cleanOptions("thickness"))
   const allHoles = sortOptions(cleanOptions("hole_size"))
   const allGrits = sortOptions(cleanOptions("grit"))
+  const allWidths = sortOptions(cleanOptions("width"))
   const allLengths = sortOptions(cleanOptions("length"))
   const allMachines = sortOptions(cleanOptions("machine"))
   const allStands = sortOptions(cleanOptions("stand"))
@@ -113,6 +115,7 @@ export default function ProductVariantsSelector({
     allHoles.length > 0,
     allGrits.length > 0,
     allLengths.length > 0,
+    allWidths.length > 0,
     allMachines.length > 0,
     allStands.length > 0,
     allMaterials.length > 0,
@@ -145,6 +148,7 @@ const filteredVariants = useMemo(() => {
   selectedHole,
   selectedGrit,
   selectedThickness,
+  selectedWidth,
   selectedLength,
   selectedMachine,
   selectedStand,
@@ -199,6 +203,7 @@ const availableQualities = useMemo(() => {
   selectedHole,
   selectedGrit,
   selectedThickness,
+  selectedWidth,
   selectedLength,
   selectedMachine,
   selectedStand,
@@ -210,6 +215,7 @@ const availableQualities = useMemo(() => {
   const availableThickness = cleanAvailable("thickness")
   const availableHoles = cleanAvailable("hole_size")
   const availableGrits = cleanAvailable("grit")
+  const availableWidths = cleanAvailable("width")
   const availableLengths = cleanAvailable("length")
   const availableMachines = cleanAvailable("machine")
   const availableStands = cleanAvailable("stand")
@@ -238,6 +244,7 @@ const availableQualities = useMemo(() => {
   (allThickness.length <= 1 || selectedThickness) &&
   (allHoles.length <= 1 || selectedHole) &&
   (allGrits.length <= 1 || selectedGrit) &&
+  (allWidths.length <= 1 || selectedWidth) &&
   (allLengths.length <= 1 || selectedLength) &&
   (allMachines.length <= 1 || selectedMachine) &&
   (allStands.length <= 1 || selectedStand) &&
@@ -314,6 +321,29 @@ onClick={() =>
           </div>
         </div>
       )}
+
+      {allWidths.length > 0 && (
+  <div>
+    <h3 className="mb-3 text-lg text-slate-800 tracking-wide">
+      {isArabic ? "العرض" : "Width"}
+    </h3>
+    <div className="flex flex-wrap gap-2">
+      {allWidths.map((w) => (
+        <OptionButton
+          key={w}
+          value={w}
+          selected={selectedWidth === w}
+          available={availableWidths.has(String(w))}
+          onClick={() =>
+            setSelectedWidth(
+              String(selectedWidth) === String(w) ? null : String(w)
+            )
+          }
+        />
+      ))}
+    </div>
+  </div>
+)}
 
      
 

@@ -2,10 +2,13 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface CartItem {
-  id: string // ✅ UNIQUE ID
+  id: string
 
   product_id: string
+  product_code?: string | null
+
   variant_id?: string
+  variant_code?: string | null
 
   name: string
   image?: string
@@ -15,14 +18,18 @@ export interface CartItem {
 
   diameter?: string
   thickness?: string
+  width?: string
   hole_size?: string
   grit?: string
   length?: string
-  machine?: string;
+  machine?: string
+  stand?: string
+
   material_name_en?: string
   material_name_ar?: string
-  stand?: string
-  
+
+  quality_name_en?: string
+  quality_name_ar?: string
 }
 
 interface CartState {
