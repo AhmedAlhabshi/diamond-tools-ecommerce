@@ -5,9 +5,13 @@ import { deleteProduct } from "@/app/actions/products";
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ updated?: string; q?: string }>;
+  searchParams: Promise<{
+    updated?: string;
+    q?: string;
+    groupBy?: "category" | "brand";
+  }>;
 }) {
-  const { updated, q } = await searchParams;
+  const { updated, q, groupBy = "category" } = await searchParams;
   const searchQuery = q?.toLowerCase().trim() || "";
 
   const supabase = await createClient();
@@ -22,6 +26,11 @@ export default async function AdminProductsPage({
   const { data: categories } = await supabase
     .from("categories")
     .select("id, name_en, name_ar, sort_order")
+    .order("sort_order", { ascending: true });
+
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("id, name, name_ar, sort_order")
     .order("sort_order", { ascending: true });
 
   if (error) {
@@ -44,11 +53,25 @@ export default async function AdminProductsPage({
     return category?.name_ar || "";
   };
 
+  const getBrandName = (brandId: string) => {
+    const brand = brands?.find((b) => String(b.id) === String(brandId));
+
+    return brand?.name || "No Brand";
+  };
+
+  const getBrandArabicName = (brandId: string) => {
+    const brand = brands?.find((b) => String(b.id) === String(brandId));
+
+    return brand?.name_ar || "";
+  };
+
   const filteredProducts = (products || []).filter((product: any) => {
     if (!searchQuery) return true;
 
     const categoryName = getCategoryName(product.category_id);
     const categoryNameAr = getCategoryArabicName(product.category_id);
+    const brandName = getBrandName(product.brand_id);
+    const brandNameAr = getBrandArabicName(product.brand_id);
 
     return (
       product.name_en?.toLowerCase().includes(searchQuery) ||
@@ -56,20 +79,37 @@ export default async function AdminProductsPage({
       product.product_code?.toLowerCase().includes(searchQuery) ||
       product.code?.toLowerCase().includes(searchQuery) ||
       categoryName?.toLowerCase().includes(searchQuery) ||
-      categoryNameAr?.toLowerCase().includes(searchQuery)
+      categoryNameAr?.toLowerCase().includes(searchQuery) ||
+      brandName?.toLowerCase().includes(searchQuery) ||
+      brandNameAr?.toLowerCase().includes(searchQuery)
     );
   });
 
   const groupedProducts = filteredProducts.reduce((groups: any, product: any) => {
-    const categoryName = getCategoryName(product.category_id);
+    const groupName =
+      groupBy === "brand"
+        ? getBrandName(product.brand_id)
+        : getCategoryName(product.category_id);
 
-    if (!groups[categoryName]) {
-      groups[categoryName] = [];
+    if (!groups[groupName]) {
+      groups[groupName] = [];
     }
 
-    groups[categoryName].push(product);
+    groups[groupName].push(product);
     return groups;
   }, {});
+
+  const buildHref = (nextGroupBy: "category" | "brand") => {
+    const params = new URLSearchParams();
+
+    params.set("groupBy", nextGroupBy);
+
+    if (q) {
+      params.set("q", q);
+    }
+
+    return `./products?${params.toString()}`;
+  };
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -99,13 +139,15 @@ export default async function AdminProductsPage({
         </div>
       )}
 
-      <form method="GET" className="mb-6 bg-white p-4 rounded-lg shadow">
+      <form method="GET" className="mb-4 bg-white p-4 rounded-lg shadow">
+        <input type="hidden" name="groupBy" value={groupBy} />
+
         <div className="flex gap-3">
           <input
             type="text"
             name="q"
             defaultValue={q || ""}
-            placeholder="Search by product name, code, or category..."
+            placeholder="Search by product name, code, category, or brand..."
             className="w-full border border-gray-300 rounded px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
@@ -118,7 +160,7 @@ export default async function AdminProductsPage({
 
           {searchQuery && (
             <Link
-              href="./products"
+              href={`./products?groupBy=${groupBy}`}
               className="bg-gray-200 text-slate-800 px-5 py-2 rounded hover:bg-gray-300"
             >
               Clear
@@ -126,6 +168,39 @@ export default async function AdminProductsPage({
           )}
         </div>
       </form>
+
+      <div className="mb-6 bg-white p-4 rounded-lg shadow flex items-center justify-between">
+        <div>
+          <div className="font-semibold text-slate-900">Arrange products by</div>
+          <div className="text-sm text-slate-500">
+            Current view: {groupBy === "brand" ? "Brand" : "Category"}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Link
+            href={buildHref("category")}
+            className={`px-4 py-2 rounded border ${
+              groupBy === "category"
+                ? "bg-slate-900 text-white border-slate-900"
+                : "bg-white text-slate-800 hover:bg-gray-100"
+            }`}
+          >
+            Category
+          </Link>
+
+          <Link
+            href={buildHref("brand")}
+            className={`px-4 py-2 rounded border ${
+              groupBy === "brand"
+                ? "bg-slate-900 text-white border-slate-900"
+                : "bg-white text-slate-800 hover:bg-gray-100"
+            }`}
+          >
+            Brand
+          </Link>
+        </div>
+      </div>
 
       {searchQuery && (
         <div className="mb-4 text-sm text-slate-600">
@@ -136,14 +211,16 @@ export default async function AdminProductsPage({
 
       <div className="space-y-8">
         {Object.entries(groupedProducts).length > 0 ? (
-          Object.entries(groupedProducts).map(([categoryName, items]: any) => (
+          Object.entries(groupedProducts).map(([groupName, items]: any) => (
             <div
-              key={categoryName}
+              key={groupName}
               className="bg-white rounded-lg shadow overflow-hidden"
             >
               <div className="bg-slate-900 text-white px-5 py-3">
-                <h2 className="text-lg font-bold">{categoryName}</h2>
-                <p className="text-sm text-slate-300">{items.length} products</p>
+                <h2 className="text-lg font-bold">{groupName}</h2>
+                <p className="text-sm text-slate-300">
+                  {items.length} products
+                </p>
               </div>
 
               {items.map((product: any) => (
@@ -155,6 +232,7 @@ export default async function AdminProductsPage({
                     <div className="font-semibold text-slate-900">
                       {product.name_en}
                     </div>
+
                     <div className="text-sm text-gray-500">
                       {product.name_ar}
                     </div>
@@ -165,6 +243,14 @@ export default async function AdminProductsPage({
                       </div>
                     )}
 
+                    <div className="text-sm text-gray-500 mt-1">
+                      Category: {getCategoryName(product.category_id)}
+                    </div>
+
+                    <div className="text-sm text-gray-500 mt-1">
+                      Brand: {getBrandName(product.brand_id)}
+                    </div>
+
                     <div className="text-sm text-gray-400 mt-1">
                       Stock: {product.stock}
                     </div>
@@ -172,7 +258,7 @@ export default async function AdminProductsPage({
 
                   <div className="flex items-center gap-3">
                     <div className="text-slate-700 font-medium">
-                      {product.price} SAR
+                      {product.individual_price || product.price || 0} SAR
                     </div>
 
                     <Link
