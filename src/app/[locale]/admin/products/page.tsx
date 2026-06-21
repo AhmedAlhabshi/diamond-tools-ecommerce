@@ -18,7 +18,12 @@ export default async function AdminProductsPage({
 
   const { data: products, error } = await supabase
     .from("products")
-    .select("*")
+    .select(`
+      *,
+      product_variants (
+        variant_code
+      )
+    `)
     .eq("is_active", true)
     .order("category_sort_order", { ascending: true })
     .order("created_at", { ascending: false });
@@ -32,11 +37,6 @@ export default async function AdminProductsPage({
     .from("brands")
     .select("id, name, name_ar, sort_order")
     .order("sort_order", { ascending: true });
-
-  // ✅ Load variants also, so search can find variant code
-  const { data: variants } = await supabase
-    .from("product_variants")
-    .select("product_id, code");
 
   if (error) {
     console.log("Error loading products:", error);
@@ -70,11 +70,10 @@ export default async function AdminProductsPage({
     return brand?.name_ar || "";
   };
 
-  const getProductVariantCodes = (productId: string) => {
+  const getProductVariantCodes = (product: any) => {
     return (
-      variants
-        ?.filter((variant: any) => String(variant.product_id) === String(productId))
-        .map((variant: any) => variant.code)
+      product.product_variants
+        ?.map((variant: any) => variant.variant_code)
         .filter(Boolean) || []
     );
   };
@@ -87,10 +86,10 @@ export default async function AdminProductsPage({
     const brandName = getBrandName(product.brand_id);
     const brandNameAr = getBrandArabicName(product.brand_id);
 
-    const variantCodes = getProductVariantCodes(product.id);
+    const variantCodes = getProductVariantCodes(product);
 
     const hasMatchingVariantCode = variantCodes.some((code: string) =>
-      code.toLowerCase().includes(searchQuery)
+      String(code).toLowerCase().includes(searchQuery)
     );
 
     return (
@@ -245,7 +244,7 @@ export default async function AdminProductsPage({
               </div>
 
               {items.map((product: any) => {
-                const variantCodes = getProductVariantCodes(product.id);
+                const variantCodes = getProductVariantCodes(product);
 
                 return (
                   <div
