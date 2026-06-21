@@ -33,6 +33,11 @@ export default async function AdminProductsPage({
     .select("id, name, name_ar, sort_order")
     .order("sort_order", { ascending: true });
 
+  // ✅ Load variants also, so search can find variant code
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("product_id, code");
+
   if (error) {
     console.log("Error loading products:", error);
   }
@@ -65,6 +70,15 @@ export default async function AdminProductsPage({
     return brand?.name_ar || "";
   };
 
+  const getProductVariantCodes = (productId: string) => {
+    return (
+      variants
+        ?.filter((variant: any) => String(variant.product_id) === String(productId))
+        .map((variant: any) => variant.code)
+        .filter(Boolean) || []
+    );
+  };
+
   const filteredProducts = (products || []).filter((product: any) => {
     if (!searchQuery) return true;
 
@@ -73,11 +87,18 @@ export default async function AdminProductsPage({
     const brandName = getBrandName(product.brand_id);
     const brandNameAr = getBrandArabicName(product.brand_id);
 
+    const variantCodes = getProductVariantCodes(product.id);
+
+    const hasMatchingVariantCode = variantCodes.some((code: string) =>
+      code.toLowerCase().includes(searchQuery)
+    );
+
     return (
       product.name_en?.toLowerCase().includes(searchQuery) ||
       product.name_ar?.toLowerCase().includes(searchQuery) ||
       product.product_code?.toLowerCase().includes(searchQuery) ||
       product.code?.toLowerCase().includes(searchQuery) ||
+      hasMatchingVariantCode ||
       categoryName?.toLowerCase().includes(searchQuery) ||
       categoryNameAr?.toLowerCase().includes(searchQuery) ||
       brandName?.toLowerCase().includes(searchQuery) ||
@@ -147,7 +168,7 @@ export default async function AdminProductsPage({
             type="text"
             name="q"
             defaultValue={q || ""}
-            placeholder="Search by product name, code, category, or brand..."
+            placeholder="Search by product name, product code, variant code, category, or brand..."
             className="w-full border border-gray-300 rounded px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
@@ -223,66 +244,76 @@ export default async function AdminProductsPage({
                 </p>
               </div>
 
-              {items.map((product: any) => (
-                <div
-                  key={product.id}
-                  className="flex justify-between items-center border-b p-4 hover:bg-slate-50"
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900">
-                      {product.name_en}
-                    </div>
+              {items.map((product: any) => {
+                const variantCodes = getProductVariantCodes(product.id);
 
-                    <div className="text-sm text-gray-500">
-                      {product.name_ar}
-                    </div>
-
-                    {(product.product_code || product.code) && (
-                      <div className="text-sm text-blue-600 mt-1">
-                        Code: {product.product_code || product.code}
+                return (
+                  <div
+                    key={product.id}
+                    className="flex justify-between items-center border-b p-4 hover:bg-slate-50"
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900">
+                        {product.name_en}
                       </div>
-                    )}
 
-                    <div className="text-sm text-gray-500 mt-1">
-                      Category: {getCategoryName(product.category_id)}
+                      <div className="text-sm text-gray-500">
+                        {product.name_ar}
+                      </div>
+
+                      {(product.product_code || product.code) && (
+                        <div className="text-sm text-blue-600 mt-1">
+                          Product Code: {product.product_code || product.code}
+                        </div>
+                      )}
+
+                      {variantCodes.length > 0 && (
+                        <div className="text-sm text-purple-600 mt-1">
+                          Variant Codes: {variantCodes.join(", ")}
+                        </div>
+                      )}
+
+                      <div className="text-sm text-gray-500 mt-1">
+                        Category: {getCategoryName(product.category_id)}
+                      </div>
+
+                      <div className="text-sm text-gray-500 mt-1">
+                        Brand: {getBrandName(product.brand_id)}
+                      </div>
+
+                      <div className="text-sm text-gray-400 mt-1">
+                        Stock: {product.stock}
+                      </div>
                     </div>
 
-                    <div className="text-sm text-gray-500 mt-1">
-                      Brand: {getBrandName(product.brand_id)}
-                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-slate-700 font-medium">
+                        {product.individual_price || product.price || 0} SAR
+                      </div>
 
-                    <div className="text-sm text-gray-400 mt-1">
-                      Stock: {product.stock}
+                      <Link
+                        href={`./products/edit/${product.id}`}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </Link>
+
+                      <Link
+                        href={`./products/${product.id}/variants`}
+                        className="px-3 py-1 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+                      >
+                        Variants
+                      </Link>
+
+                      <form action={deleteProduct.bind(null, product.id)}>
+                        <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                          Delete
+                        </button>
+                      </form>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="text-slate-700 font-medium">
-                      {product.individual_price || product.price || 0} SAR
-                    </div>
-
-                    <Link
-                      href={`./products/edit/${product.id}`}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Edit
-                    </Link>
-
-                    <Link
-                      href={`/admin/products/${product.id}/variants`}
-                      className="px-3 py-1 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
-                    >
-                      Variants
-                    </Link>
-
-                    <form action={deleteProduct.bind(null, product.id)}>
-                      <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-                        Delete
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))
         ) : (
