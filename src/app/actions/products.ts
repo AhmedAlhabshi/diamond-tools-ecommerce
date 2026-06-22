@@ -573,3 +573,18 @@ export async function updateAllProductsOrder(formData: FormData) {
 
   redirect("/en/admin/products/order?success=true")
 }
+
+export async function toggleProductCompleted(
+  productId: string,
+  completed: boolean
+) {
+  const supabase = await createClient();
+
+  await supabase
+    .from("products")
+    .update({ admin_completed: completed })
+    .eq("id", productId);
+
+  revalidatePath("/en/admin/products");
+  revalidatePath("/ar/admin/products");
+}

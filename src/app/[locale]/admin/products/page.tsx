@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { deleteProduct } from "@/app/actions/products";
+import {
+  deleteProduct,
+  toggleProductCompleted,
+} from "@/app/actions/products";
 
 export default async function AdminProductsPage({
   searchParams,
@@ -60,13 +63,11 @@ export default async function AdminProductsPage({
 
   const getBrandName = (brandId: string) => {
     const brand = brands?.find((b) => String(b.id) === String(brandId));
-
     return brand?.name || "No Brand";
   };
 
   const getBrandArabicName = (brandId: string) => {
     const brand = brands?.find((b) => String(b.id) === String(brandId));
-
     return brand?.name_ar || "";
   };
 
@@ -85,7 +86,6 @@ export default async function AdminProductsPage({
     const categoryNameAr = getCategoryArabicName(product.category_id);
     const brandName = getBrandName(product.brand_id);
     const brandNameAr = getBrandArabicName(product.brand_id);
-
     const variantCodes = getProductVariantCodes(product);
 
     const hasMatchingVariantCode = variantCodes.some((code: string) =>
@@ -97,6 +97,7 @@ export default async function AdminProductsPage({
       product.name_ar?.toLowerCase().includes(searchQuery) ||
       product.product_code?.toLowerCase().includes(searchQuery) ||
       product.code?.toLowerCase().includes(searchQuery) ||
+      product.made_in?.toLowerCase().includes(searchQuery) ||
       hasMatchingVariantCode ||
       categoryName?.toLowerCase().includes(searchQuery) ||
       categoryNameAr?.toLowerCase().includes(searchQuery) ||
@@ -121,7 +122,6 @@ export default async function AdminProductsPage({
 
   const buildHref = (nextGroupBy: "category" | "brand") => {
     const params = new URLSearchParams();
-
     params.set("groupBy", nextGroupBy);
 
     if (q) {
@@ -167,7 +167,7 @@ export default async function AdminProductsPage({
             type="text"
             name="q"
             defaultValue={q || ""}
-            placeholder="Search by product name, product code, variant code, category, or brand..."
+            placeholder="Search by product name, product code, variant code, made in, category, or brand..."
             className="w-full border border-gray-300 rounded px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
@@ -249,7 +249,11 @@ export default async function AdminProductsPage({
                 return (
                   <div
                     key={product.id}
-                    className="flex justify-between items-center border-b p-4 hover:bg-slate-50"
+                    className={`flex justify-between items-center border-b p-4 hover:bg-slate-50 ${
+                      product.admin_completed
+                        ? "bg-green-50 border-green-200"
+                        : ""
+                    }`}
                   >
                     <div>
                       <div className="font-semibold text-slate-900">
@@ -272,6 +276,12 @@ export default async function AdminProductsPage({
                         </div>
                       )}
 
+                      {product.made_in && (
+                        <div className="text-sm text-green-600 mt-1">
+                          Made In: {product.made_in}
+                        </div>
+                      )}
+
                       <div className="text-sm text-gray-500 mt-1">
                         Category: {getCategoryName(product.category_id)}
                       </div>
@@ -289,6 +299,25 @@ export default async function AdminProductsPage({
                       <div className="text-slate-700 font-medium">
                         {product.individual_price || product.price || 0} SAR
                       </div>
+
+                      <form
+                        action={toggleProductCompleted.bind(
+                          null,
+                          product.id,
+                          !product.admin_completed
+                        )}
+                      >
+                        <button
+                          type="submit"
+                          className={`px-3 py-1 rounded font-medium ${
+                            product.admin_completed
+                              ? "bg-green-600 text-white"
+                              : "bg-gray-200 text-slate-700"
+                          }`}
+                        >
+                          {product.admin_completed ? "✓ Finished" : "☐ Finished"}
+                        </button>
+                      </form>
 
                       <Link
                         href={`./products/edit/${product.id}`}
