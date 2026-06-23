@@ -14,31 +14,34 @@ export default function ProductVariantsPage() {
   const [holeSize, setHoleSize] = useState("")
   const [grit, setGrit] = useState("")
   const [thickness, setThickness] = useState("")
-  const [width, setWidth] = useState("")
   const [length, setLength] = useState("")
+  const [width, setWidth] = useState("")
+  const [height, setHeight] = useState("")
   const [machine, setMachine] = useState("")
-  const [stand, setStand] = useState("") 
+  const [stand, setStand] = useState("")
+
   const [materialNameEn, setMaterialNameEn] = useState("")
   const [materialNameAr, setMaterialNameAr] = useState("")
   const [materialIconFile, setMaterialIconFile] = useState<File | null>(null)
   const [materialIconUrl, setMaterialIconUrl] = useState("")
   const [removeMaterialIcon, setRemoveMaterialIcon] = useState(false)
+
   const [qualityNameEn, setQualityNameEn] = useState("")
-const [qualityNameAr, setQualityNameAr] = useState("")
-const [qualityIconFile, setQualityIconFile] = useState<File | null>(null)
-const [qualityIconUrl, setQualityIconUrl] = useState("")
-const [removeQualityIcon, setRemoveQualityIcon] = useState(false)
+  const [qualityNameAr, setQualityNameAr] = useState("")
+  const [qualityIconFile, setQualityIconFile] = useState<File | null>(null)
+  const [qualityIconUrl, setQualityIconUrl] = useState("")
+  const [removeQualityIcon, setRemoveQualityIcon] = useState(false)
+
   const [descriptionEn, setDescriptionEn] = useState("")
   const [descriptionAr, setDescriptionAr] = useState("")
   const [price, setPrice] = useState("")
   const [stock, setStock] = useState("")
   const [variantCode, setVariantCode] = useState("")
 
-
   const [variants, setVariants] = useState<any[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  
+
   const [productImages, setProductImages] = useState<string[]>([])
   const [variantImage, setVariantImage] = useState("")
 
@@ -47,20 +50,24 @@ const [removeQualityIcon, setRemoveQualityIcon] = useState(false)
     setHoleSize("")
     setGrit("")
     setThickness("")
-    setWidth("")
     setLength("")
+    setWidth("")
+    setHeight("")
     setMachine("")
-setQualityNameEn("")
-setQualityNameAr("")
-setQualityIconFile(null)
-setQualityIconUrl("")
-setRemoveQualityIcon(false)
-    setStand("") 
+    setStand("")
+
+    setQualityNameEn("")
+    setQualityNameAr("")
+    setQualityIconFile(null)
+    setQualityIconUrl("")
+    setRemoveQualityIcon(false)
+
     setMaterialNameEn("")
     setMaterialNameAr("")
     setMaterialIconFile(null)
     setMaterialIconUrl("")
     setRemoveMaterialIcon(false)
+
     setDescriptionEn("")
     setDescriptionAr("")
     setPrice("")
@@ -87,12 +94,12 @@ setRemoveQualityIcon(false)
     setVariants(data || [])
 
     const { data: productData } = await supabase
-  .from("products")
-  .select("images")
-  .eq("id", productId)
-  .single()
+      .from("products")
+      .select("images")
+      .eq("id", productId)
+      .single()
 
-setProductImages(productData?.images || [])
+    setProductImages(productData?.images || [])
   }
 
   useEffect(() => {
@@ -126,50 +133,46 @@ setProductImages(productData?.images || [])
         return
       }
 
-      const { data } = supabase.storage
-        .from("products")
-        .getPublicUrl(fileName)
+      const { data } = supabase.storage.from("products").getPublicUrl(fileName)
 
       finalMaterialIconUrl = data.publicUrl
     }
 
-
     let finalQualityIconUrl = removeQualityIcon ? "" : qualityIconUrl
 
-if (qualityIconFile) {
-  const fileExt = qualityIconFile.name.split(".").pop()
-  const fileName = `variant-quality-icons/${crypto.randomUUID()}.${fileExt}`
+    if (qualityIconFile) {
+      const fileExt = qualityIconFile.name.split(".").pop()
+      const fileName = `variant-quality-icons/${crypto.randomUUID()}.${fileExt}`
 
-  const { error: uploadError } = await supabase.storage
-    .from("products")
-    .upload(fileName, qualityIconFile)
+      const { error: uploadError } = await supabase.storage
+        .from("products")
+        .upload(fileName, qualityIconFile)
 
-  if (uploadError) {
-    console.error(uploadError)
-    alert("Error uploading quality icon")
-    setLoading(false)
-    return
-  }
+      if (uploadError) {
+        console.error(uploadError)
+        alert("Error uploading quality icon")
+        setLoading(false)
+        return
+      }
 
-  const { data } = supabase.storage
-    .from("products")
-    .getPublicUrl(fileName)
+      const { data } = supabase.storage.from("products").getPublicUrl(fileName)
 
-  finalQualityIconUrl = data.publicUrl
-}
+      finalQualityIconUrl = data.publicUrl
+    }
 
     const payload = {
       diameter,
       hole_size: holeSize,
       grit,
       thickness,
-      width,
       length,
+      width,
+      height,
       machine,
       stand,
       quality_name_en: qualityNameEn,
-quality_name_ar: qualityNameAr,
-quality_icon_url: finalQualityIconUrl,
+      quality_name_ar: qualityNameAr,
+      quality_icon_url: finalQualityIconUrl,
       material_name_en: materialNameEn,
       material_name_ar: materialNameAr,
       material_icon_url: finalMaterialIconUrl,
@@ -191,12 +194,10 @@ quality_icon_url: finalQualityIconUrl,
 
       error = res.error
     } else {
-      const res = await supabase
-        .from("product_variants")
-        .insert({
-          product_id: productId,
-          ...payload,
-        })
+      const res = await supabase.from("product_variants").insert({
+        product_id: productId,
+        ...payload,
+      })
 
       error = res.error
     }
@@ -242,20 +243,18 @@ quality_icon_url: finalQualityIconUrl,
   }
 
   const clearQuality = () => {
-  setQualityNameEn("")
-  setQualityNameAr("")
-  setQualityIconFile(null)
-  setQualityIconUrl("")
-  setRemoveQualityIcon(true)
-}
+    setQualityNameEn("")
+    setQualityNameAr("")
+    setQualityIconFile(null)
+    setQualityIconUrl("")
+    setRemoveQualityIcon(true)
+  }
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Manage Variants</h1>
 
-      <p className="text-sm text-gray-500 mb-6">
-        Product ID: {productId}
-      </p>
+      <p className="text-sm text-gray-500 mb-6">Product ID: {productId}</p>
 
       <div className="bg-white p-6 rounded-lg shadow max-w-xl space-y-4">
         <h2 className="text-lg font-semibold">
@@ -269,7 +268,7 @@ quality_icon_url: finalQualityIconUrl,
           className="w-full border p-2 rounded"
         />
 
-                <input
+        <input
           placeholder="Thickness (e.g. 2mm)"
           value={thickness}
           onChange={(e) => setThickness(e.target.value)}
@@ -282,7 +281,6 @@ quality_icon_url: finalQualityIconUrl,
           onChange={(e) => setHoleSize(e.target.value)}
           className="w-full border p-2 rounded"
         />
-      
 
         <input
           placeholder="Grit (e.g. 60)"
@@ -292,18 +290,23 @@ quality_icon_url: finalQualityIconUrl,
         />
 
         <input
-  placeholder="Width (e.g. 100mm)"
-  value={width}
-  onChange={(e) => setWidth(e.target.value)}
-  className="w-full border p-2 rounded"
-/>
-
-
-
-        <input
           placeholder="Length (e.g. 300mm)"
           value={length}
           onChange={(e) => setLength(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          placeholder="Width (e.g. 100mm)"
+          value={width}
+          onChange={(e) => setWidth(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          placeholder="Height (e.g. 50mm)"
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
           className="w-full border p-2 rounded"
         />
 
@@ -314,7 +317,7 @@ quality_icon_url: finalQualityIconUrl,
           className="w-full border p-2 rounded"
         />
 
-          <input
+        <input
           placeholder="Stand (e.g. With Stand / Without Stand)"
           value={stand}
           onChange={(e) => setStand(e.target.value)}
@@ -390,100 +393,95 @@ quality_icon_url: finalQualityIconUrl,
         </div>
 
         <div className="border rounded-lg p-4 bg-slate-50">
-  <h3 className="font-semibold mb-3">
-    Variant Image
-  </h3>
+          <h3 className="font-semibold mb-3">Variant Image</h3>
 
-  <div className="flex flex-wrap gap-3">
-    {productImages.map((img) => (
-      <button
-        key={img}
-        type="button"
-        onClick={() => setVariantImage(img)}
-        className={`border-2 rounded-lg overflow-hidden ${
-          variantImage === img
-            ? "border-blue-600"
-            : "border-transparent"
-        }`}
-      >
-        <img
-          src={img}
-          alt="Variant"
-          className="w-24 h-24 object-cover"
-        />
-      </button>
-    ))}
-  </div>
+          <div className="flex flex-wrap gap-3">
+            {productImages.map((img) => (
+              <button
+                key={img}
+                type="button"
+                onClick={() => setVariantImage(img)}
+                className={`border-2 rounded-lg overflow-hidden ${
+                  variantImage === img ? "border-blue-600" : "border-transparent"
+                }`}
+              >
+                <img
+                  src={img}
+                  alt="Variant"
+                  className="w-24 h-24 object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
 
-</div>
+        <div className="border rounded-lg p-4 space-y-3 bg-slate-50">
+          <h3 className="font-semibold text-slate-800">Quality</h3>
 
-  <div className="border rounded-lg p-4 space-y-3 bg-slate-50">
-  <h3 className="font-semibold text-slate-800">Quality</h3>
+          <input
+            placeholder="Quality Name English (e.g. Premium / Standard / Economy)"
+            value={qualityNameEn}
+            onChange={(e) => setQualityNameEn(e.target.value)}
+            className="w-full border p-2 rounded bg-white"
+          />
 
-  <input
-    placeholder="Quality Name English (e.g. Premium / Standard / Economy)"
-    value={qualityNameEn}
-    onChange={(e) => setQualityNameEn(e.target.value)}
-    className="w-full border p-2 rounded bg-white"
-  />
+          <input
+            placeholder="Quality Name Arabic (e.g. ممتاز / عادي / اقتصادي)"
+            value={qualityNameAr}
+            onChange={(e) => setQualityNameAr(e.target.value)}
+            className="w-full border p-2 rounded bg-white text-right"
+            dir="rtl"
+          />
 
-  <input
-    placeholder="Quality Name Arabic (e.g. ممتاز / عادي / اقتصادي)"
-    value={qualityNameAr}
-    onChange={(e) => setQualityNameAr(e.target.value)}
-    className="w-full border p-2 rounded bg-white text-right"
-    dir="rtl"
-  />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Quality Icon
+            </label>
 
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Quality Icon
-    </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setQualityIconFile(file)
+                setQualityIconUrl(URL.createObjectURL(file))
+                setRemoveQualityIcon(false)
+              }}
+              className="w-full border p-2 rounded bg-white"
+            />
 
-    <input
-      type="file"
-      accept="image/*"
-      onChange={(e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setQualityIconFile(file)
-        setQualityIconUrl(URL.createObjectURL(file))
-        setRemoveQualityIcon(false)
-      }}
-      className="w-full border p-2 rounded bg-white"
-    />
+            {qualityIconUrl && !removeQualityIcon && (
+              <div className="mt-3 flex items-center gap-3">
+                <img
+                  src={qualityIconUrl}
+                  alt="Quality icon"
+                  className="w-12 h-12 object-contain border rounded p-1 bg-white"
+                />
 
-    {qualityIconUrl && !removeQualityIcon && (
-      <div className="mt-3 flex items-center gap-3">
-        <img
-          src={qualityIconUrl}
-          alt="Quality icon"
-          className="w-12 h-12 object-contain border rounded p-1 bg-white"
-        />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQualityIconFile(null)
+                    setQualityIconUrl("")
+                    setRemoveQualityIcon(true)
+                  }}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Delete Icon
+                </button>
+              </div>
+            )}
+          </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setQualityIconFile(null)
-            setQualityIconUrl("")
-            setRemoveQualityIcon(true)
-          }}
-          className="text-sm text-red-600 hover:underline"
-        >
-          Delete Icon
-        </button>
-      </div>
-    )}
-  </div>
-
-  <button
-    type="button"
-    onClick={clearQuality}
-    className="text-sm bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-  >
-    Clear Quality
-  </button>
-</div>
+          <button
+            type="button"
+            onClick={clearQuality}
+            className="text-sm bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Clear Quality
+          </button>
+        </div>
 
         <textarea
           placeholder="Variant Description English"
@@ -501,11 +499,11 @@ quality_icon_url: finalQualityIconUrl,
         />
 
         <input
-  placeholder="Variant Code (e.g. GW-100-6-16)"
-  value={variantCode}
-  onChange={(e) => setVariantCode(e.target.value)}
-  className="w-full border p-2 rounded"
-/>
+          placeholder="Variant Code (e.g. GW-100-6-16)"
+          value={variantCode}
+          onChange={(e) => setVariantCode(e.target.value)}
+          className="w-full border p-2 rounded"
+        />
 
         <input
           placeholder="Price"
@@ -527,11 +525,7 @@ quality_icon_url: finalQualityIconUrl,
             disabled={loading}
             className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
           >
-            {loading
-              ? "Saving..."
-              : editingId
-                ? "Update Variant"
-                : "Add Variant"}
+            {loading ? "Saving..." : editingId ? "Update Variant" : "Add Variant"}
           </button>
 
           {editingId && (
@@ -554,31 +548,33 @@ quality_icon_url: finalQualityIconUrl,
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-100">
-<tr>
-  <th className="p-3 text-left">Code</th>
-  <th className="p-3 text-left">Image</th>
+              <tr>
+                <th className="p-3 text-left">Code</th>
+                <th className="p-3 text-left">Image</th>
 
-  <th className="p-3 text-left">Diameter</th>
-  <th className="p-3 text-left">Thickness</th>
-  <th className="p-3 text-left">Hole Size</th>
-  <th className="p-3 text-left">Grit</th>
-  <th className="p-3 text-left">Width</th>
-  <th className="p-3 text-left">Length</th>
+                <th className="p-3 text-left">Diameter</th>
+                <th className="p-3 text-left">Thickness</th>
+                <th className="p-3 text-left">Hole Size</th>
+                <th className="p-3 text-left">Grit</th>
 
-  <th className="p-3 text-left">Material</th>
-  <th className="p-3 text-left">Quality</th>
+                <th className="p-3 text-left">Length</th>
+                <th className="p-3 text-left">Width</th>
+                <th className="p-3 text-left">Height</th>
 
-  <th className="p-3 text-left">Machine</th>
-  <th className="p-3 text-left">Stand</th>
+                <th className="p-3 text-left">Material</th>
+                <th className="p-3 text-left">Quality</th>
 
-  <th className="p-3 text-left">Price</th>
-  <th className="p-3 text-left">Stock</th>
+                <th className="p-3 text-left">Machine</th>
+                <th className="p-3 text-left">Stand</th>
 
-  <th className="p-3 text-left">Description EN</th>
-  <th className="p-3 text-left">Description AR</th>
+                <th className="p-3 text-left">Price</th>
+                <th className="p-3 text-left">Stock</th>
 
-  <th className="p-3 text-left">Actions</th>
-</tr>
+                <th className="p-3 text-left">Description EN</th>
+                <th className="p-3 text-left">Description AR</th>
+
+                <th className="p-3 text-left">Actions</th>
+              </tr>
             </thead>
 
             <tbody>
@@ -586,85 +582,90 @@ quality_icon_url: finalQualityIconUrl,
                 <tr key={v.id} className="border-t">
                   <td className="p-3">{v.variant_code || "-"}</td>
 
-<td className="p-3">
-  {v.variant_image ? (
-    <img
-      src={v.variant_image}
-      alt="Variant"
-      className="w-12 h-12 object-cover rounded"
-    />
-  ) : (
-    "-"
-  )}
-</td>
+                  <td className="p-3">
+                    {v.variant_image ? (
+                      <img
+                        src={v.variant_image}
+                        alt="Variant"
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </td>
 
-<td className="p-3">{v.diameter || "-"}</td>
-<td className="p-3">{v.thickness || "-"}</td>
-<td className="p-3">{v.hole_size || "-"}</td>
-<td className="p-3">{v.grit || "-"}</td>
-<td className="p-3">{v.width || "-"}</td>
-<td className="p-3">{v.length || "-"}</td>
+                  <td className="p-3">{v.diameter || "-"}</td>
+                  <td className="p-3">{v.thickness || "-"}</td>
+                  <td className="p-3">{v.hole_size || "-"}</td>
+                  <td className="p-3">{v.grit || "-"}</td>
 
-<td className="p-3">
-  {(v.material_name_en || v.material_icon_url) ? (
-    <div className="flex items-center gap-2">
-      {v.material_icon_url && (
-        <img
-          src={v.material_icon_url}
-          alt="Material icon"
-          className="w-8 h-8 object-contain"
-        />
-      )}
-      <div>
-        <div>{v.material_name_en || "-"}</div>
-        <div className="text-xs text-gray-500" dir="rtl">
-          {v.material_name_ar || ""}
-        </div>
-      </div>
-    </div>
-  ) : (
-    "-"
-  )}
-</td>
+                  <td className="p-3">{v.length || "-"}</td>
+                  <td className="p-3">{v.width || "-"}</td>
+                  <td className="p-3">{v.height || "-"}</td>
 
-<td className="p-3">
-  {(v.quality_name_en || v.quality_icon_url) ? (
-    <div className="flex items-center gap-2">
-      {v.quality_icon_url && (
-        <img
-          src={v.quality_icon_url}
-          alt="Quality icon"
-          className="w-8 h-8 object-contain"
-        />
-      )}
-      <div>
-        <div>{v.quality_name_en || "-"}</div>
-        <div className="text-xs text-gray-500" dir="rtl">
-          {v.quality_name_ar || ""}
-        </div>
-      </div>
-    </div>
-  ) : (
-    "-"
-  )}
-</td>
+                  <td className="p-3">
+                    {v.material_name_en || v.material_icon_url ? (
+                      <div className="flex items-center gap-2">
+                        {v.material_icon_url && (
+                          <img
+                            src={v.material_icon_url}
+                            alt="Material icon"
+                            className="w-8 h-8 object-contain"
+                          />
+                        )}
+                        <div>
+                          <div>{v.material_name_en || "-"}</div>
+                          <div className="text-xs text-gray-500" dir="rtl">
+                            {v.material_name_ar || ""}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
 
-<td className="p-3">{v.machine || "-"}</td>
-<td className="p-3">{v.stand || "-"}</td>
+                  <td className="p-3">
+                    {v.quality_name_en || v.quality_icon_url ? (
+                      <div className="flex items-center gap-2">
+                        {v.quality_icon_url && (
+                          <img
+                            src={v.quality_icon_url}
+                            alt="Quality icon"
+                            className="w-8 h-8 object-contain"
+                          />
+                        )}
+                        <div>
+                          <div>{v.quality_name_en || "-"}</div>
+                          <div className="text-xs text-gray-500" dir="rtl">
+                            {v.quality_name_ar || ""}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
 
-<td className="p-3">
-  SAR {Number(v.price || 0).toFixed(2)}
-</td>
+                  <td className="p-3">{v.machine || "-"}</td>
+                  <td className="p-3">{v.stand || "-"}</td>
 
-<td className="p-3">{v.stock ?? 0}</td>
+                  <td className="p-3">
+                    SAR {Number(v.price || 0).toFixed(2)}
+                  </td>
 
-<td className="p-3 max-w-[180px] truncate">
-  {v.description_en || "-"}
-</td>
+                  <td className="p-3">{v.stock ?? 0}</td>
 
-<td className="p-3 max-w-[180px] truncate text-right" dir="rtl">
-  {v.description_ar || "-"}
-</td>
+                  <td className="p-3 max-w-[180px] truncate">
+                    {v.description_en || "-"}
+                  </td>
+
+                  <td
+                    className="p-3 max-w-[180px] truncate text-right"
+                    dir="rtl"
+                  >
+                    {v.description_ar || "-"}
+                  </td>
 
                   <td className="p-3">
                     <button
@@ -674,26 +675,32 @@ quality_icon_url: finalQualityIconUrl,
                         setHoleSize(v.hole_size || "")
                         setGrit(v.grit || "")
                         setThickness(v.thickness || "")
-                        setWidth(v.width || "")
+
                         setLength(v.length || "")
+                        setWidth(v.width || "")
+                        setHeight(v.height || "")
+
                         setMachine(v.machine || "")
                         setStand(v.stand || "")
                         setVariantImage(v.variant_image || "")
+
                         setMaterialNameEn(v.material_name_en || "")
                         setMaterialNameAr(v.material_name_ar || "")
                         setMaterialIconUrl(v.material_icon_url || "")
                         setMaterialIconFile(null)
                         setRemoveMaterialIcon(false)
+
+                        setQualityNameEn(v.quality_name_en || "")
+                        setQualityNameAr(v.quality_name_ar || "")
+                        setQualityIconUrl(v.quality_icon_url || "")
+                        setQualityIconFile(null)
+                        setRemoveQualityIcon(false)
+
                         setDescriptionEn(v.description_en || "")
                         setDescriptionAr(v.description_ar || "")
                         setVariantCode(v.variant_code || "")
                         setPrice(String(v.price || ""))
                         setStock(String(v.stock || ""))
-                        setQualityNameEn(v.quality_name_en || "")
-setQualityNameAr(v.quality_name_ar || "")
-setQualityIconUrl(v.quality_icon_url || "")
-setQualityIconFile(null)
-setRemoveQualityIcon(false)
                       }}
                       className="text-blue-600 hover:underline mr-3"
                     >
@@ -712,7 +719,7 @@ setRemoveQualityIcon(false)
 
               {variants.length === 0 && (
                 <tr>
-                  <td colSpan={16} className="p-4 text-center text-gray-500">
+                  <td colSpan={18} className="p-4 text-center text-gray-500">
                     No variants yet
                   </td>
                 </tr>

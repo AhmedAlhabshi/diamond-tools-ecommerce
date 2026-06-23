@@ -18,10 +18,13 @@ export interface CartItem {
 
   diameter?: string
   thickness?: string
-  width?: string
   hole_size?: string
   grit?: string
+
   length?: string
+  width?: string
+  height?: string
+
   machine?: string
   stand?: string
 
