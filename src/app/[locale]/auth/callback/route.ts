@@ -52,9 +52,13 @@ export async function GET(request: Request) {
         user.user_metadata?.user_type === "company" ? "pending" : "approved",
     })
 
-    if (insertError) {
-      console.error("User insert error:", insertError.message)
-    }
+if (insertError) {
+  console.error("User insert error:", insertError)
+
+  throw new Error(
+    `User insert failed: ${JSON.stringify(insertError, null, 2)}`
+  )
+}
   }
 
   return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url))
