@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       name: user.user_metadata?.name ?? null,
       email: user.email ?? null,
       phone: user.user_metadata?.phone ?? null,
-      user_type: user.user_metadata?.user_type ?? "customer",
+      user_type: user.user_metadata?.user_type ?? "individual",
       company_name: user.user_metadata?.company_name ?? null,
       cr_number: user.user_metadata?.cr_number ?? null,
       vat_number: user.user_metadata?.vat_number ?? null,
