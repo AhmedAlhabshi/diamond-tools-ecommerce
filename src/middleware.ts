@@ -19,11 +19,12 @@ export default async function middleware(request: NextRequest) {
   // Run i18n middleware
   const response = intlMiddleware(request)
 
-  // Refresh Supabase session only
+  // Refresh Supabase session
   const supabaseResponse = await updateSession(request)
 
+  // Copy all cookies (including options)
   supabaseResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie.name, cookie.value)
+    response.cookies.set(cookie)
   })
 
   return response
