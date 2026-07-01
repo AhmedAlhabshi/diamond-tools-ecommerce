@@ -35,24 +35,25 @@ export async function login(formData: FormData) {
 // ================= SIGNUP INDIVIDUAL =================
 
 export async function signupIndividual(formData: FormData) {
-
   const supabase = await createClient()
 
   const locale = formData.get("locale") as string
+  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/auth/callback`
 
   const { error } = await supabase.auth.signUp({
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/auth/callback`,
+      emailRedirectTo: redirectTo,
+      redirectTo: redirectTo,
       data: {
-        name: formData.get('name') as string,
-        phone: formData.get('phone') as string,
-        city: formData.get('city') as string,
-        address: formData.get('address') as string,
-        user_type: 'individual',
-      }
-    }
+        name: formData.get("name") as string,
+        phone: formData.get("phone") as string,
+        city: formData.get("city") as string,
+        address: formData.get("address") as string,
+        user_type: "individual",
+      },
+    } as any,
   })
 
   if (error) {
@@ -61,7 +62,6 @@ export async function signupIndividual(formData: FormData) {
 
   redirect(`/${locale}/verify-email`)
 }
-
 
 
 // ================= SIGNUP COMPANY =================
