@@ -45,7 +45,6 @@ export async function signupIndividual(formData: FormData) {
     password: formData.get("password") as string,
     options: {
       emailRedirectTo: redirectTo,
-      redirectTo: redirectTo,
       data: {
         name: formData.get("name") as string,
         phone: formData.get("phone") as string,
@@ -53,7 +52,7 @@ export async function signupIndividual(formData: FormData) {
         address: formData.get("address") as string,
         user_type: "individual",
       },
-    } as any,
+    },
   })
 
   if (error) {
