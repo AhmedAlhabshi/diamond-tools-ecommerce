@@ -143,58 +143,85 @@ useEffect(() => {
       </div>
 
       {/* ================= SEARCH ================= */}
-      <div className="px-4 pb-3">
-        <div ref={searchRef} className="relative">
+<div className="px-4 pb-3">
+  <div ref={searchRef} className="relative">
+    <input
+      type="text"
+      placeholder={t("search")}
+      value={search}
+      onFocus={() => setShowResults(true)}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setShowResults(true);
+      }}
+      className={`w-full border border-gray-200 rounded-full py-2.5 text-sm ${
+        locale === "ar" ? "pr-10 pl-4 text-right" : "pl-10 pr-4"
+      }`}
+    />
 
-          <input
-            type="text"
-            placeholder={t("search")}
-            value={search}
-            onFocus={() => setShowResults(true)}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`w-full border border-gray-200 rounded-full py-2.5 text-sm ${
-              locale === "ar"
-                ? "pr-10 pl-4 text-right"
-                : "pl-10 pr-4"
-            }`}
-          />
+    <Search
+      className={`w-4 h-4 absolute top-1/2 -translate-y-1/2 text-gray-400 ${
+        locale === "ar" ? "right-3" : "left-3"
+      }`}
+    />
 
-          <Search
-            className={`w-4 h-4 absolute top-1/2 -translate-y-1/2 text-gray-400 ${
-              locale === "ar" ? "right-3" : "left-3"
-            }`}
-          />
+    {showResults && (
+      <div className="absolute top-full left-0 w-full bg-white border rounded-xl shadow-xl mt-2 z-[9999] max-h-72 overflow-y-auto">
+        {results.length > 0 ? (
+          <>
+            {results.map((item) => (
+              <Link
+                key={item.id}
+                href={{ pathname: `/products/${item.id}` }}
+                onClick={() => setShowResults(false)}
+                className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={item.images?.[0] || "/placeholder.png"}
+                    className="w-10 h-10 object-contain"
+                    alt={locale === "ar" ? item.name_ar : item.name_en}
+                  />
 
-          {showResults && (
-            <div className="absolute top-full left-0 w-full bg-white border rounded-xl shadow-xl mt-2 z-[9999] max-h-72 overflow-y-auto">
+                  <span className="text-sm font-medium">
+                    {locale === "ar" ? item.name_ar : item.name_en}
+                  </span>
+                </div>
 
-              {results.length > 0 ? (
-                results.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/products/${item.id}`}
-                    onClick={() => setShowResults(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={item.images?.[0] || "/placeholder.png"} className="w-10 h-10 object-contain" />
-                      <span className="text-sm font-medium">
-                        {locale === "ar" ? item.name_ar : item.name_en}
-                      </span>
-                    </div>
+                <ProductPrice
+                  product={item}
+                  variant={item.variant}
+                  size="sm"
+                />
+              </Link>
+            ))}
 
-                    <ProductPrice product={item} variant={item.variant} size="sm" />
-                  </Link>
-                ))
-              ) : (
-                <div className="p-3 text-gray-500 text-sm">{t("noResults")}</div>
-              )}
-
-            </div>
-          )}
-
-        </div>
+            {search.trim() && (
+              <Link
+                href={{
+                  pathname: `/search`,
+                  query: { q: search.trim() },
+                }}
+                onClick={() => setShowResults(false)}
+                className="block w-full border-t border-gray-200 px-4 py-3 text-center text-sm font-semibold text-blue-600 hover:bg-blue-50"
+              >
+                {locale === "ar" ? "عرض كل المنتجات" : "See all products"}
+              </Link>
+            )}
+          </>
+        ) : (
+          <div className="p-3 text-gray-500 text-sm">
+            {search.trim()
+              ? t("noResults")
+              : locale === "ar"
+              ? "ابدأ بالكتابة للبحث..."
+              : "Start typing to search..."}
+          </div>
+        )}
       </div>
+    )}
+  </div>
+</div>
 
       {/* ================= SIDEBAR ================= */}
       {menuOpen && (

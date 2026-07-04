@@ -208,38 +208,53 @@ export default function DesktopHeader() {
             {showResults && (
               <div className="absolute top-full left-0 w-full bg-white border border-gray-100 rounded-2xl shadow-2xl mt-3 z-[100] overflow-hidden">
                 <div className="max-h-[400px] overflow-y-auto">
-                  {results.length > 0 ? (
-                    results.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={{ pathname: `/products/${item.id}` }}
-                        onClick={() => setShowResults(false)}
-                        className="flex items-center justify-between px-5 py-4 hover:bg-blue-50/50 transition-colors border-b border-gray-50 last:border-none"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center p-1">
-                            <img
-                              src={item.images?.[0] || "/placeholder.png"}
-                              className="w-full h-full object-contain"
-                              alt=""
-                            />
-                          </div>
+{results.length > 0 ? (
+  <>
+    {results.map((item) => (
+      <Link
+        key={item.id}
+        href={{ pathname: `/products/${item.id}` }}
+        onClick={() => setShowResults(false)}
+        className="flex items-center justify-between px-5 py-4 hover:bg-blue-50/50 transition-colors border-b border-gray-50 last:border-none"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center p-1">
+            <img
+              src={item.images?.[0] || "/placeholder.png"}
+              className="w-full h-full object-contain"
+              alt=""
+            />
+          </div>
 
-                          <span className="text-sm font-semibold text-gray-800">
-                            {currentLocale === "ar"
-                              ? item.name_ar
-                              : item.name_en}
-                          </span>
-                        </div>
+          <span className="text-sm font-semibold text-gray-800">
+            {currentLocale === "ar" ? item.name_ar : item.name_en}
+          </span>
+        </div>
 
-                        <ProductPrice
-                          product={item}
-                          variant={item.variant}
-                          size="sm"
-                        />
-                      </Link>
-                    ))
-                  ) : (
+        <ProductPrice
+          product={item}
+          variant={item.variant}
+          size="sm"
+        />
+      </Link>
+    ))}
+
+    {search.trim() && (
+      <Link
+        href={{
+          pathname: `/search`,
+          query: { q: search.trim() },
+        }}
+        onClick={() => setShowResults(false)}
+        className="block px-5 py-4 text-center text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors border-t border-gray-100"
+      >
+        {currentLocale === "ar"
+          ? "عرض كل المنتجات"
+          : "See all products"}
+      </Link>
+    )}
+  </>
+) : (
                     <div className="p-8 text-center">
                       <p className="text-gray-400 text-sm">
                         {search ? t("noResults") : "Start typing to search..."}
