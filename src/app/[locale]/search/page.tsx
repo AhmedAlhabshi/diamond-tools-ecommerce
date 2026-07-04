@@ -1,6 +1,9 @@
+// src/app/[locale]/search/page.tsx
+
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import ProductPrice from "@/components/product-price";
 
 export default async function SearchPage({
   params,
@@ -18,13 +21,7 @@ export default async function SearchPage({
   const { data: products, error } = await supabase
     .from("products")
     .select(`
-      id,
-      name_en,
-      name_ar,
-      images,
-      individual_price,
-      made_in,
-      product_code,
+      *,
       categories (
         name_en,
         name_ar
@@ -33,17 +30,61 @@ export default async function SearchPage({
         name_en,
         name_ar,
         image
+      ),
+      product_variants (
+        variant_code,
+        code,
+        diameter,
+        thickness,
+        width,
+        length,
+        hole_size,
+        grit,
+        machine,
+        stand
       )
     `)
     .eq("is_active", true)
-    .or(
-      `name_en.ilike.%${searchQuery}%,name_ar.ilike.%${searchQuery}%,product_code.ilike.%${searchQuery}%`
-    )
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error(error);
+    console.error("Search page error:", error);
   }
+
+  const filteredProducts =
+    products?.filter((product) => {
+      if (!searchQuery) return true;
+
+      const q = searchQuery.toLowerCase();
+
+      const searchableText = [
+        product.name_en,
+        product.name_ar,
+        product.product_code,
+        product.made_in,
+        product.categories?.name_en,
+        product.categories?.name_ar,
+        product.brands?.name_en,
+        product.brands?.name_ar,
+        ...(product.product_variants || []).flatMap((variant: any) => [
+          variant.variant_code,
+          variant.code,
+          variant.diameter,
+          variant.thickness,
+          variant.width,
+          variant.length,
+          variant.hole_size,
+          variant.grit,
+          variant.machine,
+          variant.stand,
+        ]),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(q);
+    }) || [];
 
   return (
     <main className="min-h-screen bg-gray-50 py-10">
@@ -52,15 +93,16 @@ export default async function SearchPage({
           {locale === "ar" ? "نتائج البحث" : "Search Results"}
         </h1>
 
-        <form
-          action={`/${locale}/search`}
-          className="mb-8 flex gap-3"
-        >
+        <form action={`/${locale}/search`} className="mb-8 flex gap-3">
           <input
             name="q"
             defaultValue={searchQuery}
-            placeholder={locale === "ar" ? "ابحث عن منتج..." : "Search products..."}
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            placeholder={
+              locale === "ar" ? "ابحث عن منتج..." : "Search products..."
+            }
+            className={`w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 ${
+              locale === "ar" ? "text-right" : ""
+            }`}
           />
 
           <button
@@ -73,15 +115,15 @@ export default async function SearchPage({
 
         <p className="mb-6 text-sm text-gray-600">
           {locale === "ar"
-            ? `${products?.length || 0} منتج`
-            : `${products?.length || 0} products found`}
+            ? `${filteredProducts.length} منتج`
+            : `${filteredProducts.length} products found`}
         </p>
 
-        {products && products.length > 0 ? (
+        {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => {
+            {filteredProducts.map((product: any) => {
               const name = locale === "ar" ? product.name_ar : product.name_en;
-              const image = product.images?.[0];
+              const image = product.images?.[0] || "/placeholder.png";
 
               return (
                 <Link
@@ -90,14 +132,12 @@ export default async function SearchPage({
                   className="rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md"
                 >
                   <div className="relative mb-4 h-40 w-full overflow-hidden rounded-lg bg-gray-100">
-                    {image && (
-                      <Image
-                        src={image}
-                        alt={name}
-                        fill
-                        className="object-contain"
-                      />
-                    )}
+                    <Image
+                      src={image}
+                      alt={name || "Product"}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
 
                   <h2 className="line-clamp-2 text-sm font-semibold text-gray-900">
@@ -106,9 +146,14 @@ export default async function SearchPage({
 
                   {product.made_in && (
                     <p className="mt-1 text-xs text-gray-500">
-                      {locale === "ar" ? "الصنع:" : "Made in:"} {product.made_in}
+                      {locale === "ar" ? "الصنع:" : "Made in:"}{" "}
+                      {product.made_in}
                     </p>
                   )}
+
+                  <div className="mt-2">
+                    <ProductPrice product={product} size="sm" />
+                  </div>
                 </Link>
               );
             })}
