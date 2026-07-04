@@ -1,168 +1,119 @@
-// src/app/[locale]/search/page.tsx
+"use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { Link } from "@/i18n/routing";
 import ProductPrice from "@/components/product-price";
 
-export default async function SearchPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { locale } = await params;
-  const { q } = await searchParams;
+export default function SearchPage() {
+  const locale = useLocale();
 
-  const searchQuery = q?.trim() || "";
-  const supabase = await createClient();
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const { data: products, error } = await supabase
-    .from("products")
-    .select(`
-      *,
-      categories (
-        name_en,
-        name_ar
-      ),
-      brands (
-        name_en,
-        name_ar,
-        image
-      ),
-      product_variants (
-        variant_code,
-        code,
-        diameter,
-        thickness,
-        width,
-        length,
-        hole_size,
-        grit,
-        machine,
-        stand
-      )
-    `)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q") || "";
+    setSearch(q);
+  }, []);
 
-  if (error) {
-    console.error("Search page error:", error);
-  }
+  useEffect(() => {
+    const delay = setTimeout(async () => {
+      if (!search.trim()) {
+        setResults([]);
+        return;
+      }
 
-  const filteredProducts =
-    products?.filter((product) => {
-      if (!searchQuery) return true;
+      setLoading(true);
 
-      const q = searchQuery.toLowerCase();
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(search)}&all=true`
+        );
+        const data = await res.json();
+        setResults(data);
+      } catch (error) {
+        console.error("Search page error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
 
-      const searchableText = [
-        product.name_en,
-        product.name_ar,
-        product.product_code,
-        product.made_in,
-        product.categories?.name_en,
-        product.categories?.name_ar,
-        product.brands?.name_en,
-        product.brands?.name_ar,
-        ...(product.product_variants || []).flatMap((variant: any) => [
-          variant.variant_code,
-          variant.code,
-          variant.diameter,
-          variant.thickness,
-          variant.width,
-          variant.length,
-          variant.hole_size,
-          variant.grit,
-          variant.machine,
-          variant.stand,
-        ]),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+    return () => clearTimeout(delay);
+  }, [search]);
 
-      return searchableText.includes(q);
-    }) || [];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    window.history.pushState(
+      null,
+      "",
+      `/${locale}/search?q=${encodeURIComponent(search)}`
+    );
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-7xl px-4">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">
+      <div className="max-w-7xl mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-6">
           {locale === "ar" ? "نتائج البحث" : "Search Results"}
         </h1>
 
-        <form action={`/${locale}/search`} className="mb-8 flex gap-3">
+        <form onSubmit={handleSubmit} className="mb-8 flex gap-3">
           <input
-            name="q"
-            defaultValue={searchQuery}
-            placeholder={
-              locale === "ar" ? "ابحث عن منتج..." : "Search products..."
-            }
-            className={`w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 ${
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={locale === "ar" ? "ابحث عن منتج..." : "Search products..."}
+            className={`w-full border rounded-lg px-4 py-3 ${
               locale === "ar" ? "text-right" : ""
             }`}
           />
 
-          <button
-            type="submit"
-            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-          >
+          <button className="bg-blue-600 text-white px-6 rounded-lg font-bold">
             {locale === "ar" ? "بحث" : "Search"}
           </button>
         </form>
 
-        <p className="mb-6 text-sm text-gray-600">
-          {locale === "ar"
-            ? `${filteredProducts.length} منتج`
-            : `${filteredProducts.length} products found`}
+        <p className="text-sm text-gray-500 mb-6">
+          {loading
+            ? locale === "ar"
+              ? "جاري البحث..."
+              : "Searching..."
+            : locale === "ar"
+            ? `${results.length} منتج`
+            : `${results.length} products found`}
         </p>
 
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {filteredProducts.map((product: any) => {
-              const name = locale === "ar" ? product.name_ar : product.name_en;
-              const image = product.images?.[0] || "/placeholder.png";
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {results.map((item) => (
+            <Link
+              key={item.id}
+              href={{ pathname: `/products/${item.id}` }}
+              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition"
+            >
+              <div className="h-40 bg-gray-50 rounded-lg flex items-center justify-center mb-4">
+                <img
+                  src={item.images?.[0] || "/placeholder.png"}
+                  className="w-full h-full object-contain"
+                  alt=""
+                />
+              </div>
 
-              return (
-                <Link
-                  key={product.id}
-                  href={`/${locale}/products/${product.id}`}
-                  className="rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md"
-                >
-                  <div className="relative mb-4 h-40 w-full overflow-hidden rounded-lg bg-gray-100">
-                    <Image
-                      src={image}
-                      alt={name || "Product"}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
+              <h2 className="text-sm font-semibold line-clamp-2">
+                {locale === "ar" ? item.name_ar : item.name_en}
+              </h2>
 
-                  <h2 className="line-clamp-2 text-sm font-semibold text-gray-900">
-                    {name}
-                  </h2>
+              <div className="mt-2">
+                <ProductPrice product={item} variant={item.variant} size="sm" />
+              </div>
+            </Link>
+          ))}
+        </div>
 
-                  {product.made_in && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      {locale === "ar" ? "الصنع:" : "Made in:"}{" "}
-                      {product.made_in}
-                    </p>
-                  )}
-
-                  <div className="mt-2">
-                    <ProductPrice product={product} size="sm" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-xl bg-white p-10 text-center text-gray-500">
-            {locale === "ar"
-              ? "لا توجد منتجات مطابقة للبحث."
-              : "No products found for this search."}
+        {!loading && search && results.length === 0 && (
+          <div className="bg-white rounded-xl p-10 text-center text-gray-500 mt-6">
+            {locale === "ar" ? "لا توجد منتجات" : "No products found"}
           </div>
         )}
       </div>
