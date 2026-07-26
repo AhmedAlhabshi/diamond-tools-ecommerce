@@ -76,6 +76,7 @@ export default function AdminOrdersPage() {
 
     return (
       order.email?.toLowerCase().includes(keyword) ||
+      order.customer_name?.toLowerCase().includes(keyword) ||
       order.phone?.toLowerCase().includes(keyword) ||
       order.id?.toLowerCase().includes(keyword)
     )
@@ -165,7 +166,10 @@ export default function AdminOrdersPage() {
 
                   <td className="p-4 text-sm">
                     <div className="font-medium text-slate-900">
-                      {order.email || "Guest"}
+                      {order.customer_name || "Guest"}
+                    </div>
+                    <div className="text-slate-500">
+                      {order.email || "-"}
                     </div>
                     <div className="text-slate-500 dir-ltr">
                       {order.phone || "-"}

@@ -70,6 +70,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <span>Quotes</span>
             </Link>
 
+            <Link
+  href="/admin/homepage-products"
+  className="flex items-center gap-3 text-slate-300 hover:text-white"
+>
+  <LayoutDashboard size={20} />
+  <span>Homepage Products</span>
+</Link>
+
           </nav>
         </div>
 

@@ -191,7 +191,11 @@
 
   "status": {
   "pending_approval": "Pending Approval",
+  "pending": "Pending",
   "processing": "Processing",
+  "ready": "Ready",
+  "completed": "Completed",
+  "cancelled": "Cancelled",
   "shipped": "Shipped",
   "delivered": "Delivered",
   "rejected": "Rejected"
@@ -227,9 +231,13 @@
     "cod": "Cash on Delivery",
     "card": "Card",
     "visa": "Visa",
+    "Visa": "Visa",
     "Mada": "Mada",
     "mastercard": "Mastercard",
-    "bank_transfer": "Bank Transfer"
+    "MasterCard": "Mastercard",
+    "bank_transfer": "Bank Transfer",
+    "Bank Transfer": "Bank Transfer",
+    "Pay on Pickup": "Pay on Pickup"
   }
 },
 
@@ -244,7 +252,11 @@
 
   "status": {
   "pending_approval": "Pending Approval",
+  "pending": "Pending",
   "processing": "Processing",
+  "ready": "Ready",
+  "completed": "Completed",
+  "cancelled": "Cancelled",
   "shipped": "Shipped",
   "delivered": "Delivered",
   "rejected": "Rejected"
@@ -256,7 +268,10 @@
   "Visa": "Visa",
   "Mada": "Mada",
   "mastercard": "Mastercard",
-  "bank_transfer": "Bank Transfer"
+  "MasterCard": "Mastercard",
+  "bank_transfer": "Bank Transfer",
+  "Bank Transfer": "Bank Transfer",
+  "Pay on Pickup": "Pay on Pickup"
 }
 },
 "ChangePassword": {
@@ -416,7 +431,7 @@
 "whatsappBranch": "Contact branch on WhatsApp",
 
   "successTitle": "Payment Successful ✅",
-  "successDesc": "Your order has been received successfully. A confirmation and invoice will be sent to your email.",
+  "successDesc": "Your order has been received successfully. The order confirmation and invoice will be sent after approval.",
 
   "orderId": "Order ID",
   "paymentStatus": "Payment Status",
@@ -491,5 +506,3 @@
   "box": "Box"
 }
 }
-
-

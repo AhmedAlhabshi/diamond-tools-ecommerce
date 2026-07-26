@@ -8,6 +8,7 @@ import type { Database } from '@/types/supabase'
 import { getDeliveryFee } from '@/lib/delivery'
 import ProductPrice from './product-price'
 import { branches } from '@/lib/branches'
+import { useRouter } from '@/i18n/routing'
 
 type Profile = Database['public']['Tables']['users']['Row'] | null
 
@@ -15,10 +16,11 @@ export default function CheckoutForm({ profile }: { profile: Profile }) {
 
   const t = useTranslations("CheckoutForm")
   const locale = useLocale()
+  const router = useRouter()
 
   const { items, getTotal, clearCart } = useCart()
 
-  const [mounted, setMounted] = useState(false)
+  const [cartHydrated, setCartHydrated] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('Visa')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,8 +29,18 @@ export default function CheckoutForm({ profile }: { profile: Profile }) {
   const [selectedBranch, setSelectedBranch] = useState('')
 
   useEffect(() => {
-    setMounted(true)
+    const unsubscribe = useCart.persist.onFinishHydration(() => {
+      setCartHydrated(true)
+    })
 
+    if (useCart.persist.hasHydrated()) {
+      queueMicrotask(() => setCartHydrated(true))
+    }
+
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const method = params.get('method')
 
@@ -37,6 +49,12 @@ export default function CheckoutForm({ profile }: { profile: Profile }) {
       setPaymentMethod('Pay on Pickup')
     }
   }, [])
+
+  useEffect(() => {
+    if (cartHydrated && items.length === 0) {
+      router.replace('/cart')
+    }
+  }, [cartHydrated, items.length, router])
 
 useEffect(() => {
   if (fulfillmentMethod === 'delivery' && paymentMethod === 'Pay on Pickup') {
@@ -104,21 +122,21 @@ useEffect(() => {
       return
     }
 
-    clearCart()
-
 if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
+  clearCart()
   window.location.href = `/${locale}/pickup/success?order_id=${res.orderId}`
   return
 }
 
     if (paymentMethod === "Bank Transfer") {
+      clearCart()
       window.location.href = `/${locale}/payment/pending`
     } else {
-      window.location.href = `/${locale}/payment?amount=${totalWithVat}&order_id=${res.orderId}`
+      window.location.href = `/${locale}/payment?order_id=${res.orderId}`
     }
   }
 
-  if (!mounted) {
+  if (!cartHydrated || items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         {t("loading")}
@@ -310,14 +328,19 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
                 {t("bankInfo")}
               </p>
 
-              <input type="file" name="bank_slip" accept="image/*,.pdf" required />
+              <input
+                type="file"
+                name="bank_slip"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                required
+              />
             </div>
           )}
 
           {/* BUTTON */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || items.length === 0}
             className="block w-full text-center bg-brand-blue text-blue py-4 rounded-lg font-extrabold shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
 {loading

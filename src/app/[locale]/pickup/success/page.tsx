@@ -143,10 +143,14 @@ const branch = branches.find(
                 {locale === "ar"
                   ? item.product?.name_ar || item.product?.name_en
                   : item.product?.name_en}
+                <span className="block text-xs text-slate-500">
+                  {item.product_code || item.product?.product_code || '-'}
+                  {item.variant_code ? ` / ${item.variant_code}` : ''}
+                </span>
               </span>
 
               <span dir="ltr" className="inline-block">
-                x{item.quantity} — SAR {item.price}
+                x{item.quantity} — SAR {Number(item.price || 0).toFixed(2)}
               </span>
             </div>
           ))}
@@ -161,7 +165,7 @@ const branch = branches.find(
         <span className="text-lg font-bold">
           {t("total")}:{" "}
           <span dir="ltr" className="inline-block">
-            SAR {order.total}
+            SAR {Number(order.total || 0).toFixed(2)}
           </span>
         </span>
 

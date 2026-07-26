@@ -1,8 +1,50 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { sendOrderEmails } from '@/lib/email'
 import { getDeliveryFee } from '@/lib/delivery'
+import { randomUUID } from 'crypto'
+
+const MAX_BANK_SLIP_SIZE = 5 * 1024 * 1024
+const BANK_SLIP_TYPES: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'application/pdf': 'pdf',
+}
+
+function hasValidBankSlipSignature(type: string, bytes: Uint8Array) {
+  if (type === 'image/jpeg') {
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+  }
+
+  if (type === 'image/png') {
+    return (
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4e &&
+      bytes[3] === 0x47 &&
+      bytes[4] === 0x0d &&
+      bytes[5] === 0x0a &&
+      bytes[6] === 0x1a &&
+      bytes[7] === 0x0a
+    )
+  }
+
+  if (type === 'image/webp') {
+    return (
+      String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' &&
+      String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP'
+    )
+  }
+
+  if (type === 'application/pdf') {
+    return String.fromCharCode(...bytes.slice(0, 5)) === '%PDF-'
+  }
+
+  return false
+}
 
 export async function processCheckout(items: any[], formData: FormData) {
 
@@ -26,12 +68,14 @@ export async function processCheckout(items: any[], formData: FormData) {
   const email = formData.get('email') as string
   const paymentMethod = formData.get('payment_method') as string
   const deliveryNotes = formData.get('delivery_notes') as string
+  const bankSlip = formData.get('bank_slip')
 
   const fulfillmentMethod =
     (formData.get('fulfillment_method') as string) || 'delivery'
 
   const pickupBranch =
     (formData.get('pickup_branch') as string) || null
+  let bankSlipBytes: Uint8Array | null = null
 
   // =========================
   // 🛑 VALIDATION
@@ -56,10 +100,91 @@ export async function processCheckout(items: any[], formData: FormData) {
     }
   }
 
+  if (paymentMethod === 'Bank Transfer') {
+    if (!(bankSlip instanceof File) || bankSlip.size === 0) {
+      return { error: 'Bank transfer receipt is required' }
+    }
+
+    if (bankSlip.size > MAX_BANK_SLIP_SIZE) {
+      return { error: 'Bank transfer receipt must not exceed 5 MB' }
+    }
+
+    if (!BANK_SLIP_TYPES[bankSlip.type]) {
+      return { error: 'Bank transfer receipt must be a JPG, PNG, WebP, or PDF file' }
+    }
+
+    bankSlipBytes = new Uint8Array(await bankSlip.arrayBuffer())
+
+    if (!hasValidBankSlipSignature(bankSlip.type, bankSlipBytes)) {
+      return { error: 'Bank transfer receipt file content is invalid' }
+    }
+  }
+
+  // =========================
+  // 🔒 SERVER-SIDE PRICING
+  // =========================
+  const pricedItems = []
+
+  for (const item of items) {
+    const quantity = Number(item.quantity)
+    const productId = String(item.product_id || '')
+    const variantId = String(item.variant_id || '')
+
+    if (!productId || !Number.isInteger(quantity) || quantity < 1) {
+      return { error: 'Invalid cart item' }
+    }
+
+    let price: number
+    let productCode: string | null = null
+    let variantCode: string | null = null
+
+    if (variantId && variantId !== 'default') {
+      const { data: variant, error: variantError } = await supabase
+        .from('product_variants')
+        .select('id, product_id, price, variant_code, product:products(product_code)')
+        .eq('id', variantId)
+        .eq('product_id', productId)
+        .single()
+
+      price = Number(variant?.price)
+      const variantProduct = Array.isArray(variant?.product)
+        ? variant.product[0]
+        : variant?.product
+      productCode = variantProduct?.product_code || null
+      variantCode = variant?.variant_code || null
+
+      if (variantError || !variant || !Number.isFinite(price) || price < 0) {
+        return { error: 'Product option is no longer available' }
+      }
+    } else {
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('id, individual_price, is_active, product_code')
+        .eq('id', productId)
+        .eq('is_active', true)
+        .single()
+
+      price = Number(product?.individual_price)
+      productCode = product?.product_code || null
+
+      if (productError || !product || !Number.isFinite(price) || price < 0) {
+        return { error: 'Product is no longer available' }
+      }
+    }
+
+    pricedItems.push({
+      product_id: productId,
+      quantity,
+      price,
+      product_code: productCode,
+      variant_code: variantCode,
+    })
+  }
+
   // =========================
   // 💳 PAYMENT STATUS
   // =========================
-  let paymentStatus = 'paid'
+  let paymentStatus = 'unpaid'
 
   if (paymentMethod === 'Bank Transfer') {
     paymentStatus = 'awaiting_transfer'
@@ -72,8 +197,8 @@ export async function processCheckout(items: any[], formData: FormData) {
   // =========================
   // 💰 CALCULATE TOTAL
   // =========================
-  const subtotal = items.reduce((sum, item) => {
-    return sum + (item.price || 0) * (item.quantity || 0)
+  const subtotal = pricedItems.reduce((sum, item) => {
+    return sum + item.price * item.quantity
   }, 0)
 
   const deliveryFee =
@@ -113,17 +238,84 @@ export async function processCheckout(items: any[], formData: FormData) {
     return { error: error?.message || 'Failed to create order' }
   }
 
+  let bankSlipPath: string | null = null
+  const admin = createAdminClient()
+
+  async function cleanupFailedOrder() {
+    if (bankSlipPath) {
+      await admin.storage.from('bank-slips').remove([bankSlipPath])
+    }
+
+    await admin.from('order_items').delete().eq('order_id', order.id)
+    await admin.from('orders').delete().eq('id', order.id)
+  }
+
+  if (
+    paymentMethod === 'Bank Transfer' &&
+    bankSlip instanceof File &&
+    bankSlipBytes
+  ) {
+    const extension = BANK_SLIP_TYPES[bankSlip.type]
+    bankSlipPath = `${order.id}/${randomUUID()}.${extension}`
+
+    const { error: uploadError } = await admin.storage
+      .from('bank-slips')
+      .upload(bankSlipPath, bankSlipBytes, {
+        contentType: bankSlip.type,
+        upsert: false,
+      })
+
+    if (uploadError) {
+      await cleanupFailedOrder()
+      return { error: 'Failed to upload bank transfer receipt' }
+    }
+
+    const { error: receiptUpdateError } = await admin
+      .from('orders')
+      .update({ bank_slip_path: bankSlipPath })
+      .eq('id', order.id)
+
+    if (receiptUpdateError) {
+      await cleanupFailedOrder()
+      return { error: 'Failed to save bank transfer receipt' }
+    }
+  }
+
   // =========================
   // 📦 INSERT ORDER ITEMS
   // =========================
-  const orderItems = items.map((item) => ({
+  const orderItems = pricedItems.map((item) => ({
     order_id: order.id,
     product_id: item.product_id,
     quantity: item.quantity,
     price: item.price,
+    product_code: item.product_code,
+    variant_code: item.variant_code,
   }))
 
-  await supabase.from('order_items').insert(orderItems)
+  const { error: orderItemsError } = await supabase
+    .from('order_items')
+    .insert(orderItems)
+
+  if (orderItemsError?.code === 'PGRST204') {
+    const legacyOrderItems = orderItems.map((item) => ({
+      order_id: item.order_id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.price,
+    }))
+    const { error: legacyInsertError } = await supabase
+      .from('order_items')
+      .insert(legacyOrderItems)
+
+    if (legacyInsertError) {
+      await cleanupFailedOrder()
+      return { error: 'Failed to save order items' }
+    }
+  } else if (orderItemsError) {
+    await cleanupFailedOrder()
+    return { error: 'Failed to save order items' }
+  }
 
   // =========================
   // 📧 SEND EMAIL
@@ -136,7 +328,7 @@ export async function processCheckout(items: any[], formData: FormData) {
         *,
         order_items (
           *,
-          product:products (name_en)
+          product:products (name_en, name_ar, product_code)
         )
       `)
       .eq('id', order.id)
@@ -153,6 +345,7 @@ export async function processCheckout(items: any[], formData: FormData) {
 
   return {
     success: true,
-    orderId: order.id
+    orderId: order.id,
+    total
   }
 }

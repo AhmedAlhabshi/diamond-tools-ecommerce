@@ -186,7 +186,11 @@
 
   "status": {
   "pending_approval": "قيد المراجعة",
+  "pending": "قيد الانتظار",
   "processing": "قيد التجهيز",
+  "ready": "جاهز",
+  "completed": "مكتمل",
+  "cancelled": "ملغي",
   "shipped": "تم الشحن",
   "delivered": "تم التسليم",
   "rejected": "مرفوض"
@@ -219,7 +223,10 @@
   "Visa": "فيزا",
   "Mada": "مدى",
   "mastercard": "ماستركارد",
-  "bank_transfer": "تحويل بنكي"
+  "MasterCard": "ماستركارد",
+  "bank_transfer": "تحويل بنكي",
+  "Bank Transfer": "تحويل بنكي",
+  "Pay on Pickup": "الدفع عند الاستلام من الفرع"
 }
 },
 "OrderDetails": {
@@ -238,7 +245,11 @@
 
   "statusLabel": {
   "pending_approval": "قيد المراجعة",
+  "pending": "قيد الانتظار",
   "processing": "قيد التجهيز",
+  "ready": "جاهز",
+  "completed": "مكتمل",
+  "cancelled": "ملغي",
   "shipped": "تم الشحن",
   "delivered": "تم التسليم",
   "rejected": "مرفوض"
@@ -248,9 +259,13 @@
     "cod": "الدفع عند الاستلام",
     "card": "بطاقة",
     "visa": "فيزا",
+    "Visa": "فيزا",
     "Mada": "مدى",
     "mastercard": "ماستركارد",
-    "bank_transfer": "تحويل بنكي"
+    "MasterCard": "ماستركارد",
+    "bank_transfer": "تحويل بنكي",
+    "Bank Transfer": "تحويل بنكي",
+    "Pay on Pickup": "الدفع عند الاستلام من الفرع"
   }
 },
 "ChangePassword": {
@@ -422,7 +437,7 @@
 "whatsappBranch": "تواصل مع الفرع عبر واتساب",
 
   "successTitle": "تم الدفع بنجاح ✅",
-  "successDesc": "تم استلام طلبك بنجاح، وسوف يتم إرسال تفاصيل الطلب والفاتورة إلى بريدك الإلكتروني.",
+  "successDesc": "تم استلام طلبك بنجاح، وسيتم إرسال تأكيد الطلب والفاتورة بعد اعتمادها.",
 
   "orderId": "رقم الطلب",
   "paymentStatus": "حالة الدفع",

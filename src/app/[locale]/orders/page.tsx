@@ -16,6 +16,9 @@ export default async function OrdersPage({
 
   const t = await getTranslations("Orders")
 
+  const translateOrderValue = (key: string, fallback: string) =>
+    t.has(key) ? t(key) : fallback
+
   const supabase = await createClient()
 
   const {
@@ -68,7 +71,7 @@ export default async function OrdersPage({
                 ${order.status === "completed" && "bg-green-100 text-green-700"}
                 ${order.status === "cancelled" && "bg-red-100 text-red-700"}
               `}>
-                {t(`status.${order.status}`)}
+                {translateOrderValue(`status.${order.status}`, order.status)}
               </span>
 
             </div>
@@ -76,11 +79,14 @@ export default async function OrdersPage({
             <div className="text-gray-600 text-sm space-y-1">
 
               <p>
-                {t("paymentLabel")}: {t(`payment.${order.payment_method}`)}
+                {t("paymentLabel")}: {translateOrderValue(
+                  `payment.${order.payment_method}`,
+                  order.payment_method || '-'
+                )}
               </p>
 
               <p>
-                {t("total")}: SAR {order.total}
+                {t("total")}: SAR {Number(order.total || 0).toFixed(2)}
               </p>
 
               <p>

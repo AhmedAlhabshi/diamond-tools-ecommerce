@@ -1,74 +1,114 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import { getPaymentOrder } from '@/app/actions/payment'
 
 declare global {
   interface Window {
-    Moyasar: any
+    Moyasar: {
+      init(options: {
+        element: string
+        amount: number
+        currency: string
+        description: string
+        publishable_api_key: string | undefined
+        callback_url: string
+        methods: string[]
+        metadata: { order_id: string }
+        on_failure(error: string): void
+      }): void
+    }
   }
 }
 
 export default function PaymentPage() {
-
-  const t = useTranslations("PaymentPage")
+  const t = useTranslations('PaymentPage')
   const locale = useLocale()
-
   const searchParams = useSearchParams()
-  const amount = searchParams.get('amount') || '100'
   const orderId = searchParams.get('order_id')
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
 
   useEffect(() => {
+    let cancelled = false
+    let stylesheet: HTMLLinkElement | null = null
+    let script: HTMLScriptElement | null = null
 
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = 'https://cdn.moyasar.com/mpf/1.6.0/moyasar.css'
-    document.head.appendChild(link)
+    const initializePayment = async () => {
+      if (!orderId) {
+        setStatus('failed')
+        return
+      }
 
-    const script = document.createElement('script')
-    script.src = "https://cdn.moyasar.com/mpf/1.6.0/moyasar.js"
-    script.async = true
+      const order = await getPaymentOrder(orderId)
 
-    script.onload = () => {
+      if (cancelled || !order.success || !order.total || !order.orderId) {
+        if (!cancelled) setStatus('failed')
+        return
+      }
 
-      window.Moyasar.init({
+      stylesheet = document.createElement('link')
+      stylesheet.rel = 'stylesheet'
+      stylesheet.href = 'https://cdn.moyasar.com/mpf/1.6.0/moyasar.css'
+      document.head.appendChild(stylesheet)
 
-        element: '.mysr-form',
+      script = document.createElement('script')
+      script.src = 'https://cdn.moyasar.com/mpf/1.6.0/moyasar.js'
+      script.async = true
+      script.onload = () => {
+        if (cancelled) return
 
-        amount: Number(amount) * 100,
-
-        currency: 'SAR',
-
-        description: t("description"),
-
-        publishable_api_key: process.env.NEXT_PUBLIC_MOYASAR_KEY,
-
-        callback_url: `${window.location.origin}/${locale}/payment/success?order_id=${orderId}`,
-
-        methods: ['creditcard', 'mada'],
-
-        metadata: {
-          order_id: orderId
-        }
-
-      })
+        window.Moyasar.init({
+          element: '.mysr-form',
+          amount: Math.round(order.total * 100),
+          currency: 'SAR',
+          description: t('description'),
+          publishable_api_key: process.env.NEXT_PUBLIC_MOYASAR_KEY,
+          callback_url: `${window.location.origin}/${locale}/payment/success?order_id=${order.orderId}`,
+          methods: ['creditcard', 'mada'],
+          metadata: { order_id: order.orderId },
+          on_failure: () => {
+            window.location.href = `/${locale}/payment/failed`
+          },
+        })
+        setStatus('ready')
+      }
+      script.onerror = () => {
+        if (!cancelled) setStatus('failed')
+      }
+      document.body.appendChild(script)
     }
 
-    document.body.appendChild(script)
+    void initializePayment()
 
-  }, [amount, locale])
+    return () => {
+      cancelled = true
+      script?.remove()
+      stylesheet?.remove()
+    }
+  }, [locale, orderId, t])
 
   return (
     <div className="max-w-3xl mx-auto py-16 px-4">
       <div className="bg-white shadow-lg rounded-xl p-8">
+        <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
 
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          {t("title")}
-        </h1>
+        {status === 'loading' && (
+          <p className="text-center text-slate-500">
+            {locale === 'ar' ? 'جاري تجهيز الدفع الآمن...' : 'Preparing secure payment...'}
+          </p>
+        )}
 
-        <div className="mysr-form"></div>
+        {status === 'failed' && (
+          <p className="text-center text-red-600">
+            {locale === 'ar'
+              ? 'تعذر تحميل الطلب للدفع. يرجى العودة إلى السلة والمحاولة مرة أخرى.'
+              : 'This order cannot be loaded for payment. Please return to the cart and try again.'}
+          </p>
+        )}
 
+        <div className={status === 'failed' ? 'hidden' : 'mysr-form'} />
       </div>
     </div>
   )

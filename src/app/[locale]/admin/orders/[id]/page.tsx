@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { notFound } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -20,7 +21,8 @@ export default async function AdminOrderDetails({
         *,
         product:products (
           name_en,
-          name_ar
+          name_ar,
+          product_code
         )
       )
     `)
@@ -28,6 +30,17 @@ export default async function AdminOrderDetails({
     .single()
 
   if (!order) notFound()
+
+  let bankSlipUrl: string | null = null
+
+  if (order.bank_slip_path) {
+    const admin = createAdminClient()
+    const { data } = await admin.storage
+      .from('bank-slips')
+      .createSignedUrl(order.bank_slip_path, 10 * 60)
+
+    bankSlipUrl = data?.signedUrl || null
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-SA', {
@@ -179,6 +192,7 @@ export default async function AdminOrderDetails({
           <h2 className="font-bold mb-4">Customer</h2>
 
           <div className="space-y-2 text-sm">
+            <p><span className="font-semibold">Name:</span> {order.customer_name || '-'}</p>
             <p><span className="font-semibold">Email:</span> {order.email || 'Guest'}</p>
             <p><span className="font-semibold">Phone:</span> <span dir="ltr">{order.phone || '-'}</span></p>
           </div>
@@ -224,6 +238,24 @@ export default async function AdminOrderDetails({
           <p><span className="font-semibold">Status:</span> {order.payment_status || '-'}</p>
           <p><span className="font-semibold">Fulfillment:</span> {order.fulfillment_method || '-'}</p>
         </div>
+
+        {order.payment_method === 'Bank Transfer' && (
+          <div className="mt-4 border-t pt-4 text-sm">
+            <span className="font-semibold">Bank Transfer Receipt:</span>{' '}
+            {bankSlipUrl ? (
+              <a
+                href={bankSlipUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline hover:text-blue-800"
+              >
+                View receipt (link expires in 10 minutes)
+              </a>
+            ) : (
+              <span className="text-red-600">Receipt unavailable</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Items */}
@@ -245,6 +277,14 @@ export default async function AdminOrderDetails({
 
                 <p className="text-sm text-slate-500">
                   Qty: {item.quantity}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  Product Code: {item.product_code || item.product?.product_code || '-'}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  Variant Code: {item.variant_code || '-'}
                 </p>
               </div>
 

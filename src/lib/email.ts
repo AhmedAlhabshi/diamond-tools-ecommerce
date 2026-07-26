@@ -1,19 +1,28 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+const fromEmail =
+  process.env.RESEND_FROM_EMAIL || 'Diamond Tools <onboarding@resend.dev>'
 
 export async function sendOrderEmails(order: any) {
 
   const isPickup = order.fulfillment_method === "pickup"
 
   const itemsHtml = (order.order_items || [])
-    .map((item: any) => `
+    .map((item: any) => {
+      const productCode = item.product_code || item.product?.product_code || '-'
+      const variantCode = item.variant_code || '-'
+
+      return `
       <tr>
         <td style="padding:8px 0;">${item.product?.name_en || '-'}</td>
+        <td style="padding:8px 0;">${productCode}</td>
+        <td style="padding:8px 0;">${variantCode}</td>
         <td style="padding:8px 0;">${item.quantity}</td>
         <td style="padding:8px 0;">SAR ${Number(item.price || 0).toFixed(2)}</td>
       </tr>
-    `)
+    `
+    })
     .join('')
 
   const total = Number(order.total || 0).toFixed(2)
@@ -22,7 +31,7 @@ export async function sendOrderEmails(order: any) {
   // 📩 ADMIN EMAIL
   // =========================
   await resend.emails.send({
-    from: 'onboarding@resend.dev',
+    from: fromEmail,
     to: [process.env.ADMIN_EMAIL!],
     subject: `🛒 New Order #${order.id}`,
 
@@ -48,7 +57,7 @@ export async function sendOrderEmails(order: any) {
         <hr/>
 
         <h3>Customer Info</h3>
-        <p><strong>Name:</strong> ${order.name || '-'}</p>
+        <p><strong>Name:</strong> ${order.customer_name || order.name || '-'}</p>
         <p><strong>Email:</strong> ${order.email || '-'}</p>
         <p><strong>Phone:</strong> ${order.phone || '-'}</p>
 
@@ -60,6 +69,8 @@ export async function sendOrderEmails(order: any) {
           <thead>
             <tr style="text-align:left;border-bottom:1px solid #ddd">
               <th>Product</th>
+              <th>Product Code</th>
+              <th>Variant Code</th>
               <th>Qty</th>
               <th>Price</th>
             </tr>
@@ -80,7 +91,7 @@ export async function sendOrderEmails(order: any) {
   // =========================
   if (order.email) {
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: fromEmail,
       to: [order.email],
       subject: `Order Confirmation #${order.id}`,
 
@@ -109,6 +120,8 @@ export async function sendOrderEmails(order: any) {
             <thead>
               <tr style="text-align:left;border-bottom:1px solid #ddd">
                 <th>Product</th>
+                <th>Product Code</th>
+                <th>Variant Code</th>
                 <th>Qty</th>
                 <th>Price</th>
               </tr>
@@ -179,7 +192,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
   }
 
   await resend.emails.send({
-    from: 'onboarding@resend.dev',
+    from: fromEmail,
     to: [order.email],
     subject: `Order Update #${order.id}`,
 

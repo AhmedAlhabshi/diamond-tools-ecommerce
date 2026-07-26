@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useCart } from '@/store/useCart'
-import { getOrderWithItems, verifyMoyasarPayment, markOrderPaid } from '@/app/actions/payment'
+import { getOrderWithItems, verifyAndMarkMoyasarPayment } from '@/app/actions/payment'
 import { useTranslations, useLocale } from 'next-intl'
 import { branches } from '@/lib/branches'
 
@@ -14,6 +15,7 @@ export default function PaymentSuccess() {
   const locale = useLocale()
 
   const searchParams = useSearchParams()
+  const router = useRouter()
   
 
   const orderId = searchParams.get('order_id')
@@ -29,21 +31,18 @@ useEffect(() => {
   const load = async () => {
 
     if (!orderId || !paymentId) {
-      setStatus('failed')
+      router.replace(`/${locale}/payment/failed`)
       return
     }
 
     try {
 
-      const payment = await verifyMoyasarPayment(paymentId)
+      const verification = await verifyAndMarkMoyasarPayment(paymentId, orderId)
 
-      if (payment.status !== "paid") {
-        setStatus('failed')
+      if (!verification.success) {
+        router.replace(`/${locale}/payment/failed`)
         return
       }
-
-      // ✅ mark as paid + send emails
-      await markOrderPaid(orderId)
 
       // ✅ get updated order
       const data = await getOrderWithItems(orderId)
@@ -59,14 +58,33 @@ useEffect(() => {
 
     } catch (err) {
       console.error("Success page error:", err)
-      setStatus('failed')
+      router.replace(`/${locale}/payment/failed`)
     }
 
   }
 
   load()
 
-}, [])
+}, [clearCart, locale, orderId, paymentId, router])
+
+  if (status === 'loading') {
+    return (
+      <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+        {locale === 'ar' ? 'جاري التحقق من الدفع...' : 'Verifying payment...'}
+      </div>
+    )
+  }
+
+  if (status === 'failed' || !order) {
+    return (
+      <div className="max-w-4xl mx-auto py-16 px-4 text-center text-red-600">
+        {locale === 'ar'
+          ? 'تعذر التحقق من الدفع. لم يتم تأكيد الطلب كمدفوع.'
+          : 'Payment could not be verified. The order was not marked as paid.'}
+      </div>
+    )
+  }
+
   const isPickup = order?.fulfillment_method === "pickup"
 
   const branch = branches.find(
@@ -178,10 +196,14 @@ const whatsappLink = branch
                 {locale === "ar"
                   ? item.product?.name_ar || item.product?.name_en
                   : item.product?.name_en}
+                <span className="block text-xs text-slate-500">
+                  {item.product_code || item.product?.product_code || '-'}
+                  {item.variant_code ? ` / ${item.variant_code}` : ''}
+                </span>
               </span>
 
               <span>
-                x{item.quantity} — SAR {item.price}
+                x{item.quantity} — SAR {Number(item.price || 0).toFixed(2)}
               </span>
             </div>
           ))}
@@ -194,7 +216,7 @@ const whatsappLink = branch
       <div className="bg-white p-6 rounded-xl border shadow-sm text-right">
 
         <span className="text-lg font-bold">
-          {t("total")}: SAR {order.total}
+          {t("total")}: SAR {Number(order.total || 0).toFixed(2)}
         </span>
 
       </div>
