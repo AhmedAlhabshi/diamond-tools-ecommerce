@@ -30,5 +30,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL(safeNext, request.url))
   }
 
-  return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url))
+  await supabase.auth.signOut()
+  return NextResponse.redirect(new URL(`/${locale}/login`, request.url))
 }

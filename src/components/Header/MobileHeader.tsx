@@ -12,7 +12,6 @@ import { useCart } from "@/store/useCart"
 import { toast } from "sonner"
 import { createClient } from "@/utils/supabase/client"
 import { usePathname } from "@/i18n/routing"
-import { useRouter } from "@/i18n/routing"
 
 export default function MobileHeader() {
 
@@ -34,18 +33,10 @@ const [submitted, setSubmitted] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null)
   const [user, setUser] = useState<any>(null)
-  const router = useRouter()
 
   const cartItemsCount = useCart((state) =>
     state.items.reduce((acc, item) => acc + item.quantity, 0)
   )
-
-const handleSignOut = async () => {
-  const supabase = createClient()
-  await supabase.auth.signOut()
-  setUser(null)
-  router.push("/login")
-}
 
   /* ================= Search ================= */
   useEffect(() => {
@@ -117,7 +108,7 @@ useEffect(() => {
     subscription.unsubscribe()
     window.removeEventListener("focus", loadUser)
   }
-}, [])
+}, [pathname])
 
   return (
     <header className="bg-white shadow-sm relative z-50">
@@ -267,28 +258,19 @@ useEffect(() => {
     {t("contact")}
   </Link>
 
-  {user && (
-  <Link href={{ pathname: "/dashboard" }} onClick={() => setMenuOpen(false)} >
-    {t("dashboard")}
-  </Link>
-)}
-
   <hr />
 
   <LanguageSwitcher />
 
 {user ? (
-  <button
-    onClick={() => {
-      setMenuOpen(false)
-      handleSignOut()
-    }}
-    className="text-left"
+  <Link
+    href={{ pathname: "/dashboard" }}
+    onClick={() => setMenuOpen(false)}
   >
-    {t("signOut")}
-  </button>
+    {t("account")}
+  </Link>
 ) : (
-  <Link href={{ pathname: "/login" }}>
+  <Link href={{ pathname: "/login" }} onClick={() => setMenuOpen(false)}>
     {t("login")}
   </Link>
 )}

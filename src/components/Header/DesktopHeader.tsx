@@ -11,10 +11,12 @@ import CartIcon from "@/components/CartIcon";
 import ProductPrice from "@/components/product-price";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
+import { usePathname } from "@/i18n/routing";
 
 export default function DesktopHeader() {
   const t = useTranslations("Header");
   const currentLocale = useLocale();
+  const pathname = usePathname();
 
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<any[]>([]);
@@ -42,7 +44,15 @@ export default function DesktopHeader() {
     };
 
     getUser();
-  }, []);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,7 +126,7 @@ export default function DesktopHeader() {
               className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
             >
               <User className="w-3.5 h-3.5" />
-              <span>{t("account")}</span>
+              <span>{user ? t("account") : t("login")}</span>
             </Link>
 
             <Link
