@@ -12,12 +12,21 @@ export default function RegisterPage() {
 
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
 
   function handleIndividual(formData: FormData) {
-
+    setError(null)
     startTransition(async () => {
       const res = await signupIndividual(formData)
-      if (res?.error) setError(res.error)
+      if (res?.error) {
+        setError(res.error)
+        setPassword("")
+        setConfirmPassword("")
+      }
     })
   }
 
@@ -43,13 +52,35 @@ export default function RegisterPage() {
 
           <div className="grid md:grid-cols-2 gap-4">
 
-            <Input label={t('name')} name="name" />
-            <Input label={t('email')} name="email" type="email" />
-            <Input label={t('phone')} name="phone" />
+            <Input
+              label={t('name')}
+              name="name"
+              value={name}
+              onChange={setName}
+              autoComplete="name"
+            />
+            <Input
+              label={t('email')}
+              name="email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              autoComplete="email"
+            />
+            <Input
+              label={t('phone')}
+              name="phone"
+              value={phone}
+              onChange={setPhone}
+              autoComplete="tel"
+            />
             <Input
               label={t('password')}
               name="password"
               type="password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="new-password"
               pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
               minLength={8}
               title={t('passwordRequirements')}
@@ -58,6 +89,9 @@ export default function RegisterPage() {
               label={t('confirmPassword')}
               name="confirmPassword"
               type="password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
               minLength={8}
             />
 
@@ -93,6 +127,9 @@ function Input({
   pattern,
   minLength,
   title,
+  value,
+  onChange,
+  autoComplete,
 }: {
   label: string
   name: string
@@ -100,6 +137,9 @@ function Input({
   pattern?: string
   minLength?: number
   title?: string
+  value: string
+  onChange: (value: string) => void
+  autoComplete?: string
 }) {
   return (
     <div>
@@ -113,6 +153,9 @@ function Input({
         pattern={pattern}
         minLength={minLength}
         title={title}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        autoComplete={autoComplete}
         required
         className="w-full border-2 border-gray-300 rounded-lg px-4 py-3"
       />
