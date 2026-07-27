@@ -221,6 +221,7 @@ export default async function AdminOrderDetails({
                 <p><span className="font-semibold">District:</span> {order.district || '-'}</p>
                 <p><span className="font-semibold">Street:</span> {order.street || '-'}</p>
                 <p><span className="font-semibold">Building:</span> {order.building || '-'}</p>
+                <p><span className="font-semibold">Short Address:</span> {order.short_address || '-'}</p>
                 <p><span className="font-semibold">Notes:</span> {order.delivery_notes || '-'}</p>
               </>
             )}

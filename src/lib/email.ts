@@ -52,6 +52,7 @@ export async function sendOrderEmails(order: any) {
           <h3>Address</h3>
           <p>${order.city || '-'} - ${order.district || '-'}</p>
           <p>${order.street || '-'}</p>
+          <p><strong>Short Address:</strong> ${order.short_address || '-'}</p>
         `}
 
         <hr/>

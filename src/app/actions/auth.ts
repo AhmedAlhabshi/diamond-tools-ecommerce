@@ -4,9 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { Resend } from 'resend'
+import { isStrongEnoughPassword } from '@/lib/password-policy'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+function getSafeLocale(formData: FormData) {
+  return formData.get("locale") === "ar" ? "ar" : "en"
+}
 
 // ================= LOGIN =================
 
@@ -14,7 +18,7 @@ export async function login(formData: FormData) {
 
   const supabase = await createClient()
 
-  const locale = formData.get("locale") as string
+  const locale = getSafeLocale(formData)
 
   const { error } = await supabase.auth.signInWithPassword({
     email: formData.get("email") as string,
@@ -37,12 +41,24 @@ export async function login(formData: FormData) {
 export async function signupIndividual(formData: FormData) {
   const supabase = await createClient()
 
-  const locale = formData.get("locale") as string
+  const locale = getSafeLocale(formData)
   const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/auth/callback`
+  const password = formData.get("password") as string
+  const confirmPassword = formData.get("confirmPassword") as string
+
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" }
+  }
+
+  if (!isStrongEnoughPassword(password)) {
+    return {
+      error: "Password must be at least 8 characters and include uppercase, lowercase, and a number",
+    }
+  }
 
   const { error } = await supabase.auth.signUp({
     email: formData.get("email") as string,
-    password: formData.get("password") as string,
+    password,
     options: {
       emailRedirectTo: redirectTo,
       data: {
@@ -69,10 +85,16 @@ export async function signupCompany(formData: FormData) {
 
   const supabase = await createClient()
 
-  const locale = formData.get("locale") as string
+  const locale = getSafeLocale(formData)
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+
+  if (!isStrongEnoughPassword(password)) {
+    return {
+      error: "Password must be at least 8 characters and include uppercase, lowercase, and a number",
+    }
+  }
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -125,7 +147,7 @@ export async function logout(formData: FormData) {
 
   const supabase = await createClient()
 
-  const locale = (formData.get("locale") as string) || "en"
+  const locale = getSafeLocale(formData)
 
   await supabase.auth.signOut()
 
@@ -142,8 +164,10 @@ export async function changePassword(formData: FormData) {
   const password = formData.get("password") as string
   const confirmPassword = formData.get("confirmPassword") as string
 
-  if (!password || password.length < 6) {
-    return { error: "Password must be at least 6 characters" }
+  if (!isStrongEnoughPassword(password)) {
+    return {
+      error: "Password must be at least 8 characters and include uppercase, lowercase, and a number",
+    }
   }
 
   if (password !== confirmPassword) {

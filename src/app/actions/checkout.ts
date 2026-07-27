@@ -64,6 +64,9 @@ export async function processCheckout(items: any[], formData: FormData) {
   const district = formData.get('district') as string
   const street = formData.get('street') as string
   const building = formData.get('building') as string
+  const shortAddress = String(formData.get('short_address') || '')
+    .trim()
+    .toUpperCase()
   const phone = formData.get('phone') as string
   const email = formData.get('email') as string
   const paymentMethod = formData.get('payment_method') as string
@@ -89,8 +92,12 @@ export async function processCheckout(items: any[], formData: FormData) {
   }
 
   if (fulfillmentMethod === 'delivery') {
-    if (!city || !district || !street || !phone) {
+    if (!city || !district || !street || !phone || !shortAddress) {
       return { error: 'Missing required address fields' }
+    }
+
+    if (!/^[A-Z]{4}\d{4}$/.test(shortAddress)) {
+      return { error: 'Short address must contain 4 letters followed by 4 numbers' }
     }
   }
 
@@ -227,6 +234,7 @@ export async function processCheckout(items: any[], formData: FormData) {
       district: fulfillmentMethod === 'delivery' ? district : null,
       street: fulfillmentMethod === 'delivery' ? street : null,
       building: fulfillmentMethod === 'delivery' ? building : null,
+      short_address: fulfillmentMethod === 'delivery' ? shortAddress : null,
       phone,
       email,
       delivery_notes: deliveryNotes

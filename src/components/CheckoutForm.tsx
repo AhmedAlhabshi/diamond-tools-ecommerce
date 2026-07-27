@@ -222,6 +222,17 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
                 <input name="district" placeholder={t("district")} required className="form-input w-full rounded-md border py-2 px-3" />
                 <input name="street" placeholder={t("street")} required className="form-input w-full rounded-md border py-2 px-3" />
                 <input name="building" placeholder={t("building")} required className="form-input w-full rounded-md border py-2 px-3" />
+                <input
+                  name="short_address"
+                  placeholder={t("shortAddress")}
+                  pattern="[A-Za-z]{4}[0-9]{4}"
+                  maxLength={8}
+                  title={t("shortAddressHint")}
+                  autoCapitalize="characters"
+                  required
+                  className="form-input w-full rounded-md border py-2 px-3 uppercase"
+                />
+                <p className="text-sm text-slate-600">{t("shortAddressHint")}</p>
                 <textarea name="delivery_notes" placeholder={t("notes")} className="form-input w-full rounded-md border py-2 px-3" />
               </div>
             </div>

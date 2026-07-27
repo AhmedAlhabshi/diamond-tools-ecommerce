@@ -46,9 +46,24 @@ export default function RegisterPage() {
             <Input label={t('name')} name="name" />
             <Input label={t('email')} name="email" type="email" />
             <Input label={t('phone')} name="phone" />
-            <Input label={t('password')} name="password" type="password" />
+            <Input
+              label={t('password')}
+              name="password"
+              type="password"
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+              minLength={8}
+              title={t('passwordRequirements')}
+            />
+            <Input
+              label={t('confirmPassword')}
+              name="confirmPassword"
+              type="password"
+              minLength={8}
+            />
 
           </div>
+
+          <p className="text-sm text-slate-600">{t('passwordRequirements')}</p>
 
           <SubmitButton text={isPending ? "Creating..." : t('register')} />
 
@@ -71,7 +86,21 @@ export default function RegisterPage() {
   )
 }
 
-function Input({ label, name, type = "text" }: any) {
+function Input({
+  label,
+  name,
+  type = "text",
+  pattern,
+  minLength,
+  title,
+}: {
+  label: string
+  name: string
+  type?: string
+  pattern?: string
+  minLength?: number
+  title?: string
+}) {
   return (
     <div>
       <label className="block text-sm font-bold text-gray-900 mb-2">
@@ -81,6 +110,9 @@ function Input({ label, name, type = "text" }: any) {
       <input
         name={name}
         type={type}
+        pattern={pattern}
+        minLength={minLength}
+        title={title}
         required
         className="w-full border-2 border-gray-300 rounded-lg px-4 py-3"
       />
@@ -88,7 +120,7 @@ function Input({ label, name, type = "text" }: any) {
   )
 }
 
-function SubmitButton({ text }: any) {
+function SubmitButton({ text }: { text: string }) {
   return (
     <button
       type="submit"

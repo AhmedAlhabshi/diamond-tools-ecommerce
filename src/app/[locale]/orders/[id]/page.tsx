@@ -149,6 +149,10 @@ export default async function OrderDetailsPage({
             </p>
 
             <p>
+              {t("shortAddress")}: {order.short_address || '-'}
+            </p>
+
+            <p>
               {t("phone")}: {order.phone}
             </p>
 

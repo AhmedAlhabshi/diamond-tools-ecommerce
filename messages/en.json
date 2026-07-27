@@ -7,6 +7,8 @@
     "register": "Register",
     "email": "Email",
     "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "passwordRequirements": "At least 8 characters with uppercase, lowercase, and a number.",
     "submit": "Submit",
     "individual": "Individual",
     "company": "Company",
@@ -217,6 +219,7 @@
 
   "address": "Shipping Address",
   "building": "Building",
+  "shortAddress": "Short Address",
   "phone": "Phone",
 
   "statusLabel": {
@@ -279,6 +282,7 @@
   "current": "Current Password",
   "new": "New Password",
   "confirm": "Confirm Password",
+  "passwordRequirements": "At least 8 characters with uppercase, lowercase, and a number.",
 
   "submit": "Change Password",
   "updating": "Updating...",
@@ -286,7 +290,8 @@
   "errors": {
     "userNotFound": "User not found",
     "wrongPassword": "Current password is incorrect",
-    "passwordMismatch": "Passwords do not match"
+    "passwordMismatch": "Passwords do not match",
+    "passwordRequirements": "Use at least 8 characters with uppercase, lowercase, and a number."
   }
 },
 "Wishlist": {
@@ -344,6 +349,8 @@
   "district": "District",
   "street": "Street",
   "building": "Building Number",
+  "shortAddress": "Short Address (ABCD1234)",
+  "shortAddressHint": "Enter 4 letters followed by 4 numbers.",
   "notes": "Delivery Notes (Optional)",
 
   "deliveryMethod": "Delivery method",
@@ -455,14 +462,17 @@
 
 "ResetPassword": {
   "title": "Reset Password",
+  "checking": "Checking your recovery session...",
   "new": "New Password",
   "confirm": "Confirm Password",
+  "passwordRequirements": "At least 8 characters with uppercase, lowercase, and a number.",
 
   "submit": "Update Password",
   "updating": "Updating...",
 
   "errors": {
-    "mismatch": "Passwords do not match"
+    "mismatch": "Passwords do not match",
+    "passwordRequirements": "Use at least 8 characters with uppercase, lowercase, and a number."
   }
 },
 

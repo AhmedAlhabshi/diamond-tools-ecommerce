@@ -6,8 +6,14 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
-  const next = url.searchParams.get("next")
+  const requestedNext = url.searchParams.get("next")
   const locale = url.pathname.split("/")[1] || "en"
+  const safeNext =
+    requestedNext?.startsWith(`/${locale}/`) &&
+    !requestedNext.startsWith("//") &&
+    !requestedNext.includes("\\")
+      ? requestedNext
+      : null
 
   const supabase = await createClient()
 
@@ -20,8 +26,8 @@ export async function GET(request: Request) {
     }
   }
 
-  if (next) {
-    return NextResponse.redirect(new URL(next, request.url))
+  if (safeNext) {
+    return NextResponse.redirect(new URL(safeNext, request.url))
   }
 
   return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url))

@@ -25,27 +25,12 @@ export default function ForgotPasswordPage() {
     setMessage("")
     setLoading(true)
 
-    // Check if email exists
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("email")
-      .eq("email", email)
-      .single()
+    const redirectTo =
+      `${window.location.origin}/${locale}/auth/callback?next=/${locale}/reset-password`
 
-    if (!existingUser) {
-      setError(t("errors.notFound"))
-      setLoading(false)
-      return
-    }
-
-    // Send reset email
-const redirectTo = `${window.location.origin}/${locale}/auth/callback?next=/${locale}/reset-password`
-
-console.log("RESET REDIRECT TO:", redirectTo)
-
-const { error } = await supabase.auth.resetPasswordForEmail(email, {
-  redirectTo,
-})
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    })
 
     setLoading(false)
 

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
 import { useTranslations } from "next-intl"
+import { isStrongEnoughPassword, PASSWORD_MIN_LENGTH } from "@/lib/password-policy"
 
 export default function ChangePasswordPage() {
 
@@ -52,6 +53,12 @@ export default function ChangePasswordPage() {
     // Check new password match
     if (newPassword !== confirmPassword) {
       setError(t("errors.passwordMismatch"))
+      setLoading(false)
+      return
+    }
+
+    if (!isStrongEnoughPassword(newPassword)) {
+      setError(t("errors.passwordRequirements"))
       setLoading(false)
       return
     }
@@ -111,8 +118,12 @@ export default function ChangePasswordPage() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full border px-4 py-2 rounded-lg"
+            minLength={PASSWORD_MIN_LENGTH}
+            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+            title={t("passwordRequirements")}
             required
           />
+          <p className="mt-1 text-sm text-slate-600">{t("passwordRequirements")}</p>
         </div>
 
         {/* Confirm */}

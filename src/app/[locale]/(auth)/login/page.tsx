@@ -4,13 +4,11 @@ import { useTranslations, useLocale } from 'next-intl'
 import { login } from '@/app/actions/auth'
 import { useState, useTransition } from 'react'
 import { Link } from '@/i18n/routing'
-import { useRouter } from '@/i18n/routing'
 
 export default function LoginPage() {
 
   const t = useTranslations('Auth')
   const locale = useLocale()
-  const router = useRouter()
 
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
