@@ -26,10 +26,12 @@ export default function AddToCartButton({
     ? product.name_ar || product.name_en
     : product.name_en
 
-  const hasVariants = product.product_variants?.length > 0
+  const variants = product.product_variants || []
+  const effectiveVariant = variant || (variants.length === 1 ? variants[0] : null)
+  const requiresVariantSelection = variants.length > 1
 
   const handleAddToCart = () => {
-    if (hasVariants && !variant) {
+    if (requiresVariantSelection && !variant) {
       toast.error(
         isArabic
           ? "يرجى اختيار الخيارات أولاً"
@@ -44,33 +46,33 @@ export default function AddToCartButton({
       return
     }
 
-    if (variant) {
+    if (effectiveVariant) {
       addItem({
         product_id: product.id,
         product_code: product.product_code || null,
 
-        variant_id: variant.id,
-        variant_code: variant.variant_code || null,
+        variant_id: effectiveVariant.id,
+        variant_code: effectiveVariant.variant_code || null,
 
         name: productName,
-        image: variant.variant_image || product.images?.[0],
-        price: variant.price,
+        image: effectiveVariant.variant_image || product.images?.[0],
+        price: effectiveVariant.price,
         quantity,
 
-        diameter: variant.diameter,
-        thickness: variant.thickness,
-        width: variant.width,
-        length: variant.length,
-        hole_size: variant.hole_size,
-        grit: variant.grit,
-        machine: variant.machine,
-        stand: variant.stand,
+        diameter: effectiveVariant.diameter,
+        thickness: effectiveVariant.thickness,
+        width: effectiveVariant.width,
+        length: effectiveVariant.length,
+        hole_size: effectiveVariant.hole_size,
+        grit: effectiveVariant.grit,
+        machine: effectiveVariant.machine,
+        stand: effectiveVariant.stand,
 
-        material_name_en: variant.material_name_en,
-        material_name_ar: variant.material_name_ar,
+        material_name_en: effectiveVariant.material_name_en,
+        material_name_ar: effectiveVariant.material_name_ar,
 
-        quality_name_en: variant.quality_name_en,
-        quality_name_ar: variant.quality_name_ar,
+        quality_name_en: effectiveVariant.quality_name_en,
+        quality_name_ar: effectiveVariant.quality_name_ar,
       })
 
       toast.success(t("added"), { duration: 500 })

@@ -21,7 +21,7 @@ export default function QuickViewModal({ product, open, onClose }: any) {
 
   const variants = product.product_variants || []
 
-  const hasVariants = variants.length > 0
+  const requiresVariantSelection = variants.length > 1
 
   // ✅ still show cheapest price only for display
   const cheapestVariant =
@@ -38,7 +38,7 @@ export default function QuickViewModal({ product, open, onClose }: any) {
 
   const handleAddToCart = () => {
     // ✅ If product has variants, force user to choose from product page
-    if (hasVariants) {
+    if (requiresVariantSelection) {
       toast.error("Please choose product options first", {
         duration: 2000,
       })
@@ -49,13 +49,30 @@ export default function QuickViewModal({ product, open, onClose }: any) {
     }
 
     // ✅ Product without variants can be added directly
+    const soleVariant = variants.length === 1 ? variants[0] : null
+
     addItem({
       product_id: product.id,
-      variant_id: "default",
+      product_code: product.product_code || null,
+      variant_id: soleVariant?.id || "default",
+      variant_code: soleVariant?.variant_code || null,
       name: product.name_en,
-      image: product.images?.[0],
-      price: product.individual_price,
+      image: soleVariant?.variant_image || product.images?.[0],
+      price: soleVariant?.price ?? product.individual_price,
       quantity: 1,
+      diameter: soleVariant?.diameter,
+      thickness: soleVariant?.thickness,
+      hole_size: soleVariant?.hole_size,
+      grit: soleVariant?.grit,
+      length: soleVariant?.length,
+      width: soleVariant?.width,
+      height: soleVariant?.height,
+      machine: soleVariant?.machine,
+      stand: soleVariant?.stand,
+      material_name_en: soleVariant?.material_name_en,
+      material_name_ar: soleVariant?.material_name_ar,
+      quality_name_en: soleVariant?.quality_name_en,
+      quality_name_ar: soleVariant?.quality_name_ar,
     })
 
     toast.success("Added to cart")

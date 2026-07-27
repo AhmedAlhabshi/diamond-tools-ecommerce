@@ -151,9 +151,10 @@ const cheapestVariant = variants.length > 0
   e.preventDefault()
   e.stopPropagation()
 
-  const hasVariants = product.product_variants?.length > 0
+  const variants = product.product_variants || []
+  const requiresVariantSelection = variants.length > 1
 
-  if (hasVariants) {
+  if (requiresVariantSelection) {
     toast.error(t("chooseOptions") || "Please choose product options first", {
       duration: 2000,
     })
@@ -164,13 +165,30 @@ const cheapestVariant = variants.length > 0
   }
 
   // ✅ no variants → normal add
+  const soleVariant = variants.length === 1 ? variants[0] : null
+
   addItem({
     product_id: product.id,
-    variant_id: "default",
+    product_code: product.product_code || null,
+    variant_id: soleVariant?.id || "default",
+    variant_code: soleVariant?.variant_code || null,
     name: productName,
-    image: product.images?.[0],
-    price: product.individual_price,
+    image: soleVariant?.variant_image || product.images?.[0],
+    price: soleVariant?.price ?? product.individual_price,
     quantity: 1,
+    diameter: soleVariant?.diameter,
+    thickness: soleVariant?.thickness,
+    hole_size: soleVariant?.hole_size,
+    grit: soleVariant?.grit,
+    length: soleVariant?.length,
+    width: soleVariant?.width,
+    height: soleVariant?.height,
+    machine: soleVariant?.machine,
+    stand: soleVariant?.stand,
+    material_name_en: soleVariant?.material_name_en,
+    material_name_ar: soleVariant?.material_name_ar,
+    quality_name_en: soleVariant?.quality_name_en,
+    quality_name_ar: soleVariant?.quality_name_ar,
   })
 
   toast.success(t("added"), { duration: 500 })
@@ -233,12 +251,22 @@ const cheapestVariant = variants.length > 0
             e.preventDefault()
             e.stopPropagation()
 
+            if (variants.length > 1) {
+              toast.error(t("chooseOptions") || "Please choose product options first", {
+                duration: 2000,
+              })
+              window.location.href = `/products/${product.id}?chooseOptions=true`
+              return
+            }
+
 const item = cheapestVariant
   ? {
       product_id: product.id,
+      product_code: product.product_code || null,
       variant_id: cheapestVariant.id,
+      variant_code: cheapestVariant.variant_code || null,
       name: productName,
-      image: product.images?.[0],
+      image: cheapestVariant.variant_image || product.images?.[0],
       price: cheapestVariant.price,
       quantity: 1,
       diameter: cheapestVariant.diameter,
@@ -246,10 +274,20 @@ const item = cheapestVariant
       hole_size: cheapestVariant.hole_size,
       grit: cheapestVariant.grit,
       length: cheapestVariant.length,
+      width: cheapestVariant.width,
+      height: cheapestVariant.height,
+      machine: cheapestVariant.machine,
+      stand: cheapestVariant.stand,
+      material_name_en: cheapestVariant.material_name_en,
+      material_name_ar: cheapestVariant.material_name_ar,
+      quality_name_en: cheapestVariant.quality_name_en,
+      quality_name_ar: cheapestVariant.quality_name_ar,
     }
               : {
                   product_id: product.id,
+                  product_code: product.product_code || null,
                   variant_id: "default",
+                  variant_code: null,
                   name: productName,
                   image: product.images?.[0],
                   price: product.individual_price,
