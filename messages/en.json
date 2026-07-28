@@ -364,11 +364,12 @@
   "payment": "Payment Method",
 
   "methods": {
+    "Cards": "Card Payment",
     "Visa": "Visa",
     "MasterCard": "MasterCard",
     "Mada": "Mada",
     "Bank Transfer": "Bank Transfer",
-    "Pay on Pickup": "Pay when collecting"
+    "Pay on Pickup": "Pay at Store"
 
 
   },

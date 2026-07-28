@@ -367,11 +367,12 @@
   "freeDelivery": "مجاني",
 
   "methods": {
+    "Cards": "الدفع بالبطاقة",
     "Visa": "فيزا",
     "MasterCard": "ماستركارد",
     "Mada": "مدى",
     "Bank Transfer": "تحويل بنكي",
-    "Pay on Pickup": "الدفع عند الاستلام من الفرع"
+    "Pay on Pickup": "الدفع عند الاستلام"
   },
 
   "bankTitle": "تفاصيل التحويل البنكي",

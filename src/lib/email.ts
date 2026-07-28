@@ -1,12 +1,36 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const fromEmail =
-  process.env.RESEND_FROM_EMAIL || 'Diamond Tools <onboarding@resend.dev>'
+
+type EmailPayload = {
+  from: string
+  to: string[]
+  subject: string
+  html: string
+}
+
+function getFromEmail() {
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim()
+
+  if (!fromEmail || fromEmail.includes('@resend.dev')) {
+    throw new Error('RESEND_FROM_EMAIL must use a verified sending domain')
+  }
+
+  return fromEmail
+}
+
+async function sendEmail(label: string, payload: EmailPayload) {
+  const { error } = await resend.emails.send(payload)
+
+  if (error) {
+    throw new Error(`${label} email failed: ${error.message}`)
+  }
+}
 
 export async function sendOrderEmails(order: any) {
 
   const isPickup = order.fulfillment_method === "pickup"
+  const fromEmail = getFromEmail()
 
   const itemsHtml = (order.order_items || [])
     .map((item: any) => {
@@ -30,9 +54,13 @@ export async function sendOrderEmails(order: any) {
   // =========================
   // 📩 ADMIN EMAIL
   // =========================
-  await resend.emails.send({
+  const adminEmail = process.env.ADMIN_EMAIL?.trim()
+  const emailJobs: Promise<void>[] = []
+
+  if (adminEmail) {
+    emailJobs.push(sendEmail('Admin order', {
     from: fromEmail,
-    to: [process.env.ADMIN_EMAIL!],
+    to: [adminEmail],
     subject: `🛒 New Order #${order.id}`,
 
     html: `
@@ -85,13 +113,16 @@ export async function sendOrderEmails(order: any) {
 
       </div>
     `,
-  })
+    }))
+  } else {
+    console.error('Admin order email skipped: ADMIN_EMAIL is not configured')
+  }
 
   // =========================
   // 📩 CUSTOMER EMAIL
   // =========================
   if (order.email) {
-    await resend.emails.send({
+    emailJobs.push(sendEmail('Customer order confirmation', {
       from: fromEmail,
       to: [order.email],
       subject: `Order Confirmation #${order.id}`,
@@ -151,7 +182,20 @@ export async function sendOrderEmails(order: any) {
 
         </div>
       `,
-    })
+    }))
+  }
+
+  const results = await Promise.allSettled(emailJobs)
+  const failures = results.filter(
+    (result): result is PromiseRejectedResult => result.status === 'rejected'
+  )
+
+  for (const failure of failures) {
+    console.error(failure.reason)
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`${failures.length} order email(s) failed`)
   }
 }
 
@@ -159,6 +203,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
   if (!order.email) return
 
   const isPickup = order.fulfillment_method === "pickup"
+  const fromEmail = getFromEmail()
 
   const statusText: Record<string, { en: string; ar: string }> = {
     pending: {
@@ -192,7 +237,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
     ar: `تم تحديث حالة طلبك إلى ${newStatus}.`,
   }
 
-  await resend.emails.send({
+  await sendEmail('Customer order status', {
     from: fromEmail,
     to: [order.email],
     subject: `Order Update #${order.id}`,

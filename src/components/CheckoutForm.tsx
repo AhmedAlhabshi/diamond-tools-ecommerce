@@ -74,17 +74,13 @@ useEffect(() => {
   const vat = (subtotal + deliveryFee) * 0.15
   const totalWithVat = subtotal + deliveryFee + vat
 
-  const paymentOptions =
-    fulfillmentMethod === 'pickup'
-      ? ['Visa', 'MasterCard', 'Mada', 'Bank Transfer', 'Pay on Pickup']
-      : ['Visa', 'MasterCard', 'Mada', 'Bank Transfer']
-
-  const logos: any = {
-    Visa: "/payment/visa.png",
-    MasterCard: "/payment/mastercard.png",
-    Mada: "/payment/mada.png",
-    "Bank Transfer": "/payment/bank-transfer.png",
-  }
+  const paymentOptions = [
+    { value: 'Visa', label: 'Cards' },
+    { value: 'Bank Transfer', label: 'Bank Transfer' },
+    ...(fulfillmentMethod === 'pickup'
+      ? [{ value: 'Pay on Pickup', label: 'Pay on Pickup' }]
+      : []),
+  ]
 
   async function handleSubmit(formData: FormData) {
 
@@ -297,12 +293,12 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
               {t("payment")}
             </h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {paymentOptions.map((method) => (
                 <label
-                  key={method}
-                  className={`border rounded-xl p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === method
+                  key={method.value}
+                  className={`border rounded-xl p-4 cursor-pointer flex flex-wrap items-center gap-3 ${
+                    paymentMethod === method.value
                       ? 'border-brand-blue bg-blue-50'
                       : 'border-slate-300'
                   }`}
@@ -310,21 +306,29 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
                   <input
                     type="radio"
                     name="payment_method"
-                    value={method}
-                    checked={paymentMethod === method}
+                    value={method.value}
+                    checked={paymentMethod === method.value}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="sr-only"
                   />
 
-                  {method === "Pay on Pickup" ? (
+                  {method.value === "Pay on Pickup" ? (
                     <span className="text-xl">💵</span>
+                  ) : method.value === "Visa" ? (
+                    <span className="flex items-center gap-2">
+                      <img src="/payment/mada.png" alt="Mada" className="h-6 w-auto" />
+                      <img src="/payment/visa.png" alt="Visa" className="h-6 w-auto" />
+                      <img src="/payment/mastercard.png" alt="Mastercard" className="h-6 w-auto" />
+                    </span>
                   ) : (
-                    <img src={logos[method]} className="h-6" />
+                    <img
+                      src="/payment/bank-transfer.png"
+                      alt=""
+                      className="h-6 w-auto"
+                    />
                   )}
 
-                  {method === "Pay on Pickup"
-                    ? t("methods.Pay on Pickup")
-                    : t(`methods.${method}`)}
+                  {t(`methods.${method.label}`)}
                 </label>
               ))}
             </div>
