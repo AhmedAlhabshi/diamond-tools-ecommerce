@@ -167,7 +167,7 @@ export default async function DashboardPage({
 
                 <div>
                   <div className="font-semibold text-sm">
-                    {t("order")} #{order.id.slice(0,8)}
+                    {t("order")} #{order.id.slice(0, 8).toUpperCase()}
                   </div>
 
                   <div className="text-xs text-gray-500">

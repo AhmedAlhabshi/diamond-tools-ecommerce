@@ -61,7 +61,7 @@ export default async function OrdersPage({
             <div className="flex justify-between mb-2">
 
               <span className="font-semibold">
-                {t("order")} #{order.id.slice(0,8)}
+                {t("order")} #{order.id.slice(0, 8).toUpperCase()}
               </span>
 
               {/* ✅ FIXED STATUS */}

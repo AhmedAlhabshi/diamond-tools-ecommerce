@@ -161,7 +161,7 @@ export default function AdminOrdersPage() {
                 >
 
                   <td className="p-4 font-semibold text-slate-900 whitespace-nowrap">
-                    #{order.id.slice(0, 8)}
+                    #{order.id.slice(0, 8).toUpperCase()}
                   </td>
 
                   <td className="p-4 text-sm">

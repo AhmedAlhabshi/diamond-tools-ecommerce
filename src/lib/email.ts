@@ -31,6 +31,7 @@ export async function sendOrderEmails(order: any) {
 
   const isPickup = order.fulfillment_method === "pickup"
   const fromEmail = getFromEmail()
+  const displayOrderId = String(order.id).slice(0, 8).toUpperCase()
 
   const itemsHtml = (order.order_items || [])
     .map((item: any) => {
@@ -61,14 +62,14 @@ export async function sendOrderEmails(order: any) {
     emailJobs.push(sendEmail('Admin order', {
     from: fromEmail,
     to: [adminEmail],
-    subject: `🛒 New Order #${order.id}`,
+    subject: `🛒 New Order #${displayOrderId}`,
 
     html: `
       <div style="font-family:Arial,sans-serif;line-height:1.6">
 
         <h2>New Order Received</h2>
 
-        <p><strong>Order ID:</strong> ${order.id}</p>
+        <p><strong>Order ID:</strong> #${displayOrderId}</p>
         <p><strong>Total:</strong> SAR ${total}</p>
         <p><strong>Payment:</strong> ${order.payment_method}</p>
         <p><strong>Status:</strong> ${order.payment_status}</p>
@@ -125,7 +126,7 @@ export async function sendOrderEmails(order: any) {
     emailJobs.push(sendEmail('Customer order confirmation', {
       from: fromEmail,
       to: [order.email],
-      subject: `Order Confirmation #${order.id}`,
+      subject: `Order Confirmation #${displayOrderId}`,
 
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6">
@@ -134,7 +135,7 @@ export async function sendOrderEmails(order: any) {
 
           <p>Your order has been received successfully.</p>
 
-          <p><strong>Order ID:</strong> ${order.id}</p>
+          <p><strong>Order ID:</strong> #${displayOrderId}</p>
           <p><strong>Total:</strong> SAR ${total}</p>
 
           ${isPickup ? `
@@ -170,7 +171,7 @@ export async function sendOrderEmails(order: any) {
 
           <p>تم استلام طلبك بنجاح.</p>
 
-          <p><strong>رقم الطلب:</strong> ${order.id}</p>
+          <p><strong>رقم الطلب:</strong> #${displayOrderId}</p>
           <p><strong>الإجمالي:</strong> ${total} ريال</p>
 
           ${isPickup ? `
@@ -204,6 +205,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
 
   const isPickup = order.fulfillment_method === "pickup"
   const fromEmail = getFromEmail()
+  const displayOrderId = String(order.id).slice(0, 8).toUpperCase()
 
   const statusText: Record<string, { en: string; ar: string }> = {
     pending: {
@@ -240,7 +242,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
   await sendEmail('Customer order status', {
     from: fromEmail,
     to: [order.email],
-    subject: `Order Update #${order.id}`,
+    subject: `Order Update #${displayOrderId}`,
 
     html: `
       <div style="font-family:Arial,sans-serif;line-height:1.6">
@@ -249,7 +251,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
 
         <p>${message.en}</p>
 
-        <p><strong>Order ID:</strong> ${order.id}</p>
+        <p><strong>Order ID:</strong> #${displayOrderId}</p>
         <p><strong>Status:</strong> ${newStatus}</p>
 
         ${
@@ -268,7 +270,7 @@ export async function sendOrderStatusEmail(order: any, newStatus: string) {
         <div dir="rtl" style="text-align:right">
           <p>${message.ar}</p>
 
-          <p><strong>رقم الطلب:</strong> ${order.id}</p>
+          <p><strong>رقم الطلب:</strong> #${displayOrderId}</p>
           <p><strong>الحالة:</strong> ${newStatus}</p>
 
           ${

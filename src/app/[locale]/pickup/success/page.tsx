@@ -115,7 +115,9 @@ const branch = branches.find(
 
         <div className="flex justify-between mb-4">
           <span className="font-semibold">{t("orderId")}</span>
-          <span dir="ltr" className="inline-block">{order.id}</span>
+          <span dir="ltr" className="inline-block">
+            #{order.id.slice(0, 8).toUpperCase()}
+          </span>
         </div>
 
         <div className="flex justify-between">

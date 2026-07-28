@@ -127,7 +127,7 @@ export default async function AdminOrderDetails({
 
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
-            Order #{order.id.slice(0, 8)}
+            Order #{order.id.slice(0, 8).toUpperCase()}
           </h1>
 
           <p className="text-slate-500 mt-1">
