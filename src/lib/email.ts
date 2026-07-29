@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+const LOGO_URL =
+  'https://pqpnbjctpmicdrdijnap.supabase.co/storage/v1/object/public/logo/logo1.png'
 
 type EmailPayload = {
   from: string
@@ -27,163 +29,244 @@ async function sendEmail(label: string, payload: EmailPayload) {
   }
 }
 
-export async function sendOrderEmails(order: any) {
+function escapeHtml(value: unknown) {
+  return String(value ?? '-')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
 
-  const isPickup = order.fulfillment_method === "pickup"
-  const fromEmail = getFromEmail()
-  const displayOrderId = String(order.id).slice(0, 8).toUpperCase()
+function formatAmount(value: unknown) {
+  const amount = Number(value || 0)
+  return Number.isFinite(amount) ? amount.toFixed(2) : '0.00'
+}
 
-  const itemsHtml = (order.order_items || [])
-    .map((item: any) => {
-      const productCode = item.product_code || item.product?.product_code || '-'
+function detailRow(label: string, value: unknown) {
+  return `
+    <tr>
+      <td style="padding:8px 0;color:#64748b;font-size:14px;">${label}</td>
+      <td style="padding:8px 0;color:#0f172a;font-size:14px;font-weight:700;text-align:right;">
+        ${escapeHtml(value)}
+      </td>
+    </tr>
+  `
+}
+
+function emailLayout(title: string, content: string) {
+  return `
+    <!doctype html>
+    <html>
+      <body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+        <div style="display:none;max-height:0;overflow:hidden;">${escapeHtml(title)}</div>
+        <div style="max-width:620px;margin:0 auto;padding:32px 16px;">
+          <div style="background:#ffffff;border-radius:16px;padding:36px 28px;border:1px solid #e5e7eb;">
+            <div style="text-align:center;">
+              <img
+                src="${LOGO_URL}"
+                alt="Diamond Tools"
+                width="180"
+                style="display:block;max-width:180px;width:100%;height:auto;margin:0 auto 24px;"
+              />
+            </div>
+
+            ${content}
+
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0;">
+
+            <div style="text-align:center;">
+              <p style="margin:0;font-weight:700;font-size:15px;color:#111827;">
+                Diamond Tools &amp; Equipment Est.
+              </p>
+              <p style="margin:8px 0 0;color:#6b7280;font-size:13px;">
+                Jeddah, Saudi Arabia
+              </p>
+              <p style="margin:6px 0 0;color:#6b7280;font-size:13px;">
+                info@diamondtools-est.com | +966 54 601 0202
+              </p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+}
+
+function orderItemsHtml(orderItems: any[]) {
+  const rows = (orderItems || [])
+    .map((item) => {
+      const productName =
+        item.product?.name_en || item.product?.name_ar || '-'
+      const productCode =
+        item.product_code || item.product?.product_code || '-'
       const variantCode = item.variant_code || '-'
 
       return `
-      <tr>
-        <td style="padding:8px 0;">${item.product?.name_en || '-'}</td>
-        <td style="padding:8px 0;">${productCode}</td>
-        <td style="padding:8px 0;">${variantCode}</td>
-        <td style="padding:8px 0;">${item.quantity}</td>
-        <td style="padding:8px 0;">SAR ${Number(item.price || 0).toFixed(2)}</td>
-      </tr>
-    `
+        <tr>
+          <td style="padding:14px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top;">
+            <div style="font-weight:700;color:#0f172a;">${escapeHtml(productName)}</div>
+            <div style="margin-top:5px;color:#64748b;font-size:12px;">
+              ${escapeHtml(productCode)} / ${escapeHtml(variantCode)}
+            </div>
+          </td>
+          <td style="padding:14px 8px;border-bottom:1px solid #e5e7eb;text-align:center;vertical-align:top;">
+            ${escapeHtml(item.quantity)}
+          </td>
+          <td style="padding:14px 8px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap;vertical-align:top;">
+            SAR ${formatAmount(item.price)}
+          </td>
+        </tr>
+      `
     })
     .join('')
 
-  const total = Number(order.total || 0).toFixed(2)
+  return `
+    <div style="margin-top:26px;">
+      <h2 style="margin:0 0 12px;font-size:18px;color:#0f172a;">Order items | عناصر الطلب</h2>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f8fafc;color:#475569;font-size:12px;">
+            <th style="padding:10px 8px;text-align:left;">Product / Code</th>
+            <th style="padding:10px 8px;text-align:center;">Qty</th>
+            <th style="padding:10px 8px;text-align:right;">Price</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `
+}
 
-  // =========================
-  // 📩 ADMIN EMAIL
-  // =========================
+export async function sendOrderEmails(order: any) {
+  const isPickup = order.fulfillment_method === 'pickup'
+  const fromEmail = getFromEmail()
+  const displayOrderId = String(order.id).slice(0, 8).toUpperCase()
+  const total = formatAmount(order.total)
+  const itemsHtml = orderItemsHtml(order.order_items)
   const adminEmail = process.env.ADMIN_EMAIL?.trim()
   const emailJobs: Promise<void>[] = []
 
   if (adminEmail) {
-    emailJobs.push(sendEmail('Admin order', {
-    from: fromEmail,
-    to: [adminEmail],
-    subject: `🛒 New Order #${displayOrderId}`,
+    const fulfillmentHtml = isPickup
+      ? detailRow('Pickup branch', order.pickup_branch)
+      : `
+          ${detailRow('City / District', `${order.city || '-'} / ${order.district || '-'}`)}
+          ${detailRow('Street / Building', `${order.street || '-'} / ${order.building || '-'}`)}
+          ${detailRow('Short address', order.short_address)}
+          ${detailRow('Delivery notes', order.delivery_notes || '-')}
+        `
 
-    html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6">
+    emailJobs.push(
+      sendEmail('Admin order', {
+        from: fromEmail,
+        to: [adminEmail],
+        subject: `New Order #${displayOrderId}`,
+        html: emailLayout(
+          `New order #${displayOrderId}`,
+          `
+            <h1 style="margin:0 0 12px;text-align:center;font-size:28px;color:#0f172a;">
+              New order received
+            </h1>
+            <p style="margin:0 0 28px;text-align:center;font-size:15px;line-height:1.7;color:#64748b;">
+              A new order has been placed through the Diamond Tools store.
+            </p>
 
-        <h2>New Order Received</h2>
+            <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                ${detailRow('Order number', `#${displayOrderId}`)}
+                ${detailRow('Total', `SAR ${total}`)}
+                ${detailRow('Payment method', order.payment_method)}
+                ${detailRow('Payment status', order.payment_status)}
+                ${detailRow('Fulfillment', isPickup ? 'Pickup from store' : 'Delivery')}
+              </table>
+            </div>
 
-        <p><strong>Order ID:</strong> #${displayOrderId}</p>
-        <p><strong>Total:</strong> SAR ${total}</p>
-        <p><strong>Payment:</strong> ${order.payment_method}</p>
-        <p><strong>Status:</strong> ${order.payment_status}</p>
-        <p><strong>Type:</strong> ${isPickup ? "Pickup from branch" : "Delivery"}</p>
+            <h2 style="margin:26px 0 10px;font-size:18px;color:#0f172a;">Customer information</h2>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+              ${detailRow('Name', order.customer_name || order.name)}
+              ${detailRow('Email', order.email)}
+              ${detailRow('Phone', order.phone)}
+              ${fulfillmentHtml}
+            </table>
 
-        ${isPickup ? `
-          <p><strong>Pickup Branch:</strong> ${order.pickup_branch}</p>
-        ` : `
-          <h3>Address</h3>
-          <p>${order.city || '-'} - ${order.district || '-'}</p>
-          <p>${order.street || '-'}</p>
-          <p><strong>Short Address:</strong> ${order.short_address || '-'}</p>
-        `}
-
-        <hr/>
-
-        <h3>Customer Info</h3>
-        <p><strong>Name:</strong> ${order.customer_name || order.name || '-'}</p>
-        <p><strong>Email:</strong> ${order.email || '-'}</p>
-        <p><strong>Phone:</strong> ${order.phone || '-'}</p>
-
-        <hr/>
-
-        <h3>Items</h3>
-
-        <table width="100%" style="border-collapse:collapse">
-          <thead>
-            <tr style="text-align:left;border-bottom:1px solid #ddd">
-              <th>Product</th>
-              <th>Product Code</th>
-              <th>Variant Code</th>
-              <th>Qty</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
             ${itemsHtml}
-          </tbody>
-        </table>
 
-        <h3 style="margin-top:20px">Total: SAR ${total}</h3>
-
-      </div>
-    `,
-    }))
+            <div style="margin-top:24px;background:#0f62fe;border-radius:10px;padding:16px;text-align:center;color:#ffffff;">
+              <span style="font-size:14px;">Order total</span>
+              <strong style="display:block;margin-top:4px;font-size:22px;">SAR ${total}</strong>
+            </div>
+          `
+        ),
+      })
+    )
   } else {
     console.error('Admin order email skipped: ADMIN_EMAIL is not configured')
   }
 
-  // =========================
-  // 📩 CUSTOMER EMAIL
-  // =========================
   if (order.email) {
-    emailJobs.push(sendEmail('Customer order confirmation', {
-      from: fromEmail,
-      to: [order.email],
-      subject: `Order Confirmation #${displayOrderId}`,
+    const fulfillmentEnglish = isPickup
+      ? `You will be notified when your order is ready for collection from ${escapeHtml(order.pickup_branch)}.`
+      : 'Your order will be prepared for delivery to the address provided.'
+    const fulfillmentArabic = isPickup
+      ? `سيتم إشعارك عندما يصبح طلبك جاهزًا للاستلام من ${escapeHtml(order.pickup_branch)}.`
+      : 'سيتم تجهيز طلبك للتوصيل إلى العنوان المسجل.'
 
-      html: `
-        <div style="font-family:Arial,sans-serif;line-height:1.6">
+    emailJobs.push(
+      sendEmail('Customer order confirmation', {
+        from: fromEmail,
+        to: [order.email],
+        subject: `Order Confirmation #${displayOrderId}`,
+        html: emailLayout(
+          `Order confirmation #${displayOrderId}`,
+          `
+            <div dir="rtl" style="text-align:center;">
+              <h1 style="margin:0 0 14px;font-size:28px;color:#0f172a;">
+                تم استلام طلبك بنجاح
+              </h1>
+              <p style="margin:0;font-size:16px;line-height:1.8;color:#475569;">
+                شكرًا لطلبك من <strong>مؤسسة الماسية للآلات والمعدات</strong>.
+                سيتم إرسال تأكيد الطلب والفاتورة بعد اعتمادها.
+              </p>
+            </div>
 
-          <h2>Thank you for your order 🙌</h2>
+            <div style="margin:28px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                ${detailRow('Order number | رقم الطلب', `#${displayOrderId}`)}
+                ${detailRow('Total | الإجمالي', `SAR ${total}`)}
+                ${detailRow('Payment | الدفع', order.payment_method)}
+              </table>
+            </div>
 
-          <p>Your order has been received successfully.</p>
+            <div dir="rtl" style="text-align:right;">
+              <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
+                ${fulfillmentArabic}
+              </p>
+            </div>
 
-          <p><strong>Order ID:</strong> #${displayOrderId}</p>
-          <p><strong>Total:</strong> SAR ${total}</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:26px 0;">
 
-          ${isPickup ? `
-            <p><strong>Pickup from:</strong> ${order.pickup_branch}</p>
-            <p>You will be notified when your order is ready.</p>
-          ` : `
-            <p>Your order will be delivered to your address.</p>
-          `}
+            <div dir="ltr" style="text-align:left;">
+              <h2 style="margin:0 0 10px;font-size:20px;color:#0f172a;">Order received successfully</h2>
+              <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
+                Thank you for ordering from <strong>Diamond Tools &amp; Equipment Est.</strong>
+                Your order confirmation and invoice will be sent after approval.
+              </p>
+              <p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:#475569;">
+                ${fulfillmentEnglish}
+              </p>
+            </div>
 
-          <hr/>
+            ${itemsHtml}
 
-          <h3>Items</h3>
-
-          <table width="100%" style="border-collapse:collapse">
-            <thead>
-              <tr style="text-align:left;border-bottom:1px solid #ddd">
-                <th>Product</th>
-                <th>Product Code</th>
-                <th>Variant Code</th>
-                <th>Qty</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-
-          <hr/>
-
-          <!-- Arabic -->
-          <h3 style="margin-top:30px">شكراً لطلبك 🙌</h3>
-
-          <p>تم استلام طلبك بنجاح.</p>
-
-          <p><strong>رقم الطلب:</strong> #${displayOrderId}</p>
-          <p><strong>الإجمالي:</strong> ${total} ريال</p>
-
-          ${isPickup ? `
-            <p><strong>فرع الاستلام:</strong> ${order.pickup_branch}</p>
-            <p>سيتم إشعارك عندما يكون طلبك جاهزًا للاستلام.</p>
-          ` : `
-            <p>سيتم توصيل الطلب إلى عنوانك.</p>
-          `}
-
-        </div>
-      `,
-    }))
+            <div style="margin-top:24px;background:#0f62fe;border-radius:10px;padding:16px;text-align:center;color:#ffffff;">
+              <span style="font-size:14px;">الإجمالي | Total</span>
+              <strong style="display:block;margin-top:4px;font-size:22px;">SAR ${total}</strong>
+            </div>
+          `
+        ),
+      })
+    )
   }
 
   const results = await Promise.allSettled(emailJobs)
@@ -203,87 +286,93 @@ export async function sendOrderEmails(order: any) {
 export async function sendOrderStatusEmail(order: any, newStatus: string) {
   if (!order.email) return
 
-  const isPickup = order.fulfillment_method === "pickup"
+  const isPickup = order.fulfillment_method === 'pickup'
   const fromEmail = getFromEmail()
   const displayOrderId = String(order.id).slice(0, 8).toUpperCase()
 
-  const statusText: Record<string, { en: string; ar: string }> = {
+  const statusText: Record<string, { en: string; ar: string; label: string }> = {
     pending: {
-      en: "Your order is pending.",
-      ar: "طلبك قيد الانتظار.",
+      en: 'Your order is pending.',
+      ar: 'طلبك قيد الانتظار.',
+      label: 'Pending | قيد الانتظار',
+    },
+    pending_approval: {
+      en: 'Your order is awaiting approval.',
+      ar: 'طلبك بانتظار الاعتماد.',
+      label: 'Pending approval | بانتظار الاعتماد',
     },
     processing: {
-      en: "Your order is now being processed.",
-      ar: "طلبك الآن قيد التجهيز.",
+      en: 'Your order is now being processed.',
+      ar: 'طلبك الآن قيد التجهيز.',
+      label: 'Processing | قيد التجهيز',
     },
     ready: {
       en: isPickup
-        ? "Your order is ready for pickup."
-        : "Your order is ready.",
-      ar: isPickup
-        ? "طلبك جاهز للاستلام."
-        : "طلبك جاهز.",
+        ? 'Your order is ready for pickup.'
+        : 'Your order is ready.',
+      ar: isPickup ? 'طلبك جاهز للاستلام.' : 'طلبك جاهز.',
+      label: 'Ready | جاهز',
     },
     completed: {
-      en: "Your order has been completed.",
-      ar: "تم إكمال طلبك بنجاح.",
+      en: 'Your order has been completed.',
+      ar: 'تم إكمال طلبك بنجاح.',
+      label: 'Completed | مكتمل',
     },
     cancelled: {
-      en: "Your order has been cancelled.",
-      ar: "تم إلغاء طلبك.",
+      en: 'Your order has been cancelled.',
+      ar: 'تم إلغاء طلبك.',
+      label: 'Cancelled | ملغي',
     },
   }
 
+  const safeStatus = escapeHtml(newStatus)
   const message = statusText[newStatus] || {
-    en: `Your order status has been updated to ${newStatus}.`,
-    ar: `تم تحديث حالة طلبك إلى ${newStatus}.`,
+    en: `Your order status has been updated to ${safeStatus}.`,
+    ar: `تم تحديث حالة طلبك إلى ${safeStatus}.`,
+    label: safeStatus,
   }
+
+  const pickupDetails =
+    isPickup && newStatus === 'ready'
+      ? `
+          <div style="margin-top:22px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;">
+            <p dir="rtl" style="margin:0 0 8px;text-align:right;color:#1e3a8a;line-height:1.7;">
+              يمكنك زيارة الفرع المحدد لاستلام طلبك:
+              <strong>${escapeHtml(order.pickup_branch)}</strong>
+            </p>
+            <p style="margin:0;color:#1e3a8a;line-height:1.7;">
+              Please visit <strong>${escapeHtml(order.pickup_branch)}</strong> to collect your order.
+            </p>
+          </div>
+        `
+      : ''
 
   await sendEmail('Customer order status', {
     from: fromEmail,
     to: [order.email],
     subject: `Order Update #${displayOrderId}`,
-
-    html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6">
-
-        <h2>Order Status Update</h2>
-
-        <p>${message.en}</p>
-
-        <p><strong>Order ID:</strong> #${displayOrderId}</p>
-        <p><strong>Status:</strong> ${newStatus}</p>
-
-        ${
-          isPickup && newStatus === "ready"
-            ? `
-              <p><strong>Pickup Branch:</strong> ${order.pickup_branch || "-"}</p>
-              <p>Please visit the selected branch to collect your order.</p>
-            `
-            : ""
-        }
-
-        <hr/>
-
-        <h2 dir="rtl" style="text-align:right">تحديث حالة الطلب</h2>
-
-        <div dir="rtl" style="text-align:right">
-          <p>${message.ar}</p>
-
-          <p><strong>رقم الطلب:</strong> #${displayOrderId}</p>
-          <p><strong>الحالة:</strong> ${newStatus}</p>
-
-          ${
-            isPickup && newStatus === "ready"
-              ? `
-                <p><strong>فرع الاستلام:</strong> ${order.pickup_branch || "-"}</p>
-                <p>يمكنك زيارة الفرع المحدد لاستلام طلبك.</p>
-              `
-              : ""
-          }
+    html: emailLayout(
+      `Order update #${displayOrderId}`,
+      `
+        <div dir="rtl" style="text-align:center;">
+          <h1 style="margin:0 0 14px;font-size:28px;color:#0f172a;">تحديث حالة الطلب</h1>
+          <p style="margin:0;font-size:16px;line-height:1.8;color:#475569;">${message.ar}</p>
         </div>
 
-      </div>
-    `,
+        <div style="margin:28px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            ${detailRow('Order number | رقم الطلب', `#${displayOrderId}`)}
+            ${detailRow('Status | الحالة', message.label)}
+          </table>
+        </div>
+
+        <div dir="ltr" style="text-align:left;">
+          <h2 style="margin:0 0 10px;font-size:20px;color:#0f172a;">Order status update</h2>
+          <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">${message.en}</p>
+        </div>
+
+        ${pickupDetails}
+      `
+    ),
   })
 }
