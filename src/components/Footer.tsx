@@ -27,7 +27,7 @@ export default function Footer() {
 
     {/* LOGO IMAGE */}
     <img
-      src="/logo11.png"
+      src="/diamond-tools-logo.png"
       alt="Diamond Tools"
       className="h-10 md:h-12 object-contain mx-auto sm:mx-0"
     />

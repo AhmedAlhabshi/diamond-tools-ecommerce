@@ -176,13 +176,11 @@ export default function DesktopHeader() {
             <Link href={{ pathname: "/" }}>
               <div className="h-[90px] flex items-center overflow-hidden">
                 <Image
-                  src={currentLocale === "ar" ? "/logo-ar1.png" : "/logo11.png"}
+                  src="/diamond-tools-logo.png"
                   alt="Diamond Industrial Tools"
-                  width={500}
-                  height={120}
-                  className={`w-auto object-contain ${
-                    currentLocale === "ar" ? "h-[50px]" : "h-[90px]"
-                  }`}
+                  width={1600}
+                  height={290}
+                  className="h-[72px] w-auto max-w-[500px] object-contain"
                   priority
                 />
               </div>

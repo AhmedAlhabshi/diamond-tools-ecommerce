@@ -121,7 +121,14 @@ useEffect(() => {
         </button>
 
         <Link href="/" locale={locale}>
-          <Image src="/logo11.png" alt="logo" width={200} height={80} className="h-10 w-auto" />
+          <Image
+            src="/diamond-tools-logo.png"
+            alt="Diamond Industrial Tools"
+            width={1600}
+            height={290}
+            className="h-10 w-auto max-w-[220px]"
+            priority
+          />
         </Link>
 
         <div className="flex items-center gap-3">

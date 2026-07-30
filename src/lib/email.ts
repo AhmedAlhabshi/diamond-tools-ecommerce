@@ -1,8 +1,6 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const LOGO_URL =
-  'https://pqpnbjctpmicdrdijnap.supabase.co/storage/v1/object/public/logo/logo1.png'
 
 type EmailPayload = {
   from: string
@@ -21,6 +19,15 @@ function getFromEmail() {
   return fromEmail
 }
 
+function getLogoUrl() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_SITE_URL is required for email assets')
+  }
+
+  return new URL('/diamond-tools-logo.png', siteUrl).toString()
+}
 async function sendEmail(label: string, payload: EmailPayload) {
   const { error } = await resend.emails.send(payload)
 
@@ -55,6 +62,8 @@ function detailRow(label: string, value: unknown) {
 }
 
 function emailLayout(title: string, content: string) {
+  const logoUrl = getLogoUrl()
+
   return `
     <!doctype html>
     <html>
@@ -64,7 +73,7 @@ function emailLayout(title: string, content: string) {
           <div style="background:#ffffff;border-radius:16px;padding:36px 28px;border:1px solid #e5e7eb;">
             <div style="text-align:center;">
               <img
-                src="${LOGO_URL}"
+                src="${logoUrl}"
                 alt="Diamond Tools"
                 width="180"
                 style="display:block;max-width:180px;width:100%;height:auto;margin:0 auto 24px;"
