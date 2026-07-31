@@ -16,6 +16,7 @@ declare global {
         publishable_api_key: string | undefined
         callback_url: string
         methods: string[]
+        supported_networks: string[]
         metadata: { order_id: string }
         on_failure(error: string): void
       }): void
@@ -50,11 +51,13 @@ export default function PaymentPage() {
 
       stylesheet = document.createElement('link')
       stylesheet.rel = 'stylesheet'
-      stylesheet.href = 'https://cdn.moyasar.com/mpf/1.6.0/moyasar.css'
+      stylesheet.href =
+        'https://cdn.jsdelivr.net/npm/moyasar-payment-form@2.2.10/dist/moyasar.css'
       document.head.appendChild(stylesheet)
 
       script = document.createElement('script')
-      script.src = 'https://cdn.moyasar.com/mpf/1.6.0/moyasar.js'
+      script.src =
+        'https://cdn.jsdelivr.net/npm/moyasar-payment-form@2.2.10/dist/moyasar.umd.min.js'
       script.async = true
       script.onload = () => {
         if (cancelled) return
@@ -66,7 +69,8 @@ export default function PaymentPage() {
           description: t('description'),
           publishable_api_key: process.env.NEXT_PUBLIC_MOYASAR_KEY,
           callback_url: `${window.location.origin}/${locale}/payment/success?order_id=${order.orderId}`,
-          methods: ['creditcard', 'mada'],
+          methods: ['creditcard'],
+          supported_networks: ['visa', 'mastercard', 'mada'],
           metadata: { order_id: order.orderId },
           on_failure: () => {
             window.location.href = `/${locale}/payment/failed`
