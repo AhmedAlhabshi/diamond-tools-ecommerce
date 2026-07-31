@@ -18,7 +18,7 @@ declare global {
         methods: string[]
         supported_networks: string[]
         metadata: { order_id: string }
-        on_failure(error: string): void
+        on_failure(error: string): Promise<void>
       }): void
     }
   }
@@ -72,7 +72,7 @@ export default function PaymentPage() {
           methods: ['creditcard'],
           supported_networks: ['visa', 'mastercard', 'mada'],
           metadata: { order_id: order.orderId },
-          on_failure: () => {
+          on_failure: async () => {
             window.location.href = `/${locale}/payment/failed`
           },
         })
