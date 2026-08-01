@@ -389,7 +389,8 @@
 
   "errors": {
   "upload": "Please upload the bank transfer receipt",
-  "branch": "Please select a branch"
+  "branch": "Please select a branch",
+  "minimumCardPayment": "The minimum card payment is SAR 1. Please increase the quantity or add another product."
   }
 },
 "ForgotPassword": {

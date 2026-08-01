@@ -73,6 +73,8 @@ useEffect(() => {
 
   const vat = (subtotal + deliveryFee) * 0.15
   const totalWithVat = subtotal + deliveryFee + vat
+  const cardPaymentBelowMinimum =
+    paymentMethod === 'Visa' && Math.round(totalWithVat * 100) < 100
 
   const paymentOptions = [
     { value: 'Visa', label: 'Cards' },
@@ -87,6 +89,11 @@ useEffect(() => {
     if (items.length === 0) return
 
     setError(null)
+
+    if (cardPaymentBelowMinimum) {
+      setError(t("errors.minimumCardPayment"))
+      return
+    }
 
     formData.append("fulfillment_method", fulfillmentMethod)
 
@@ -332,6 +339,12 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
                 </label>
               ))}
             </div>
+
+            {cardPaymentBelowMinimum && (
+              <p className="mt-3 text-sm font-medium text-red-600">
+                {t("errors.minimumCardPayment")}
+              </p>
+            )}
           </div>
 
           {/* Bank Transfer */}
@@ -355,7 +368,7 @@ if (fulfillmentMethod === "pickup" && paymentMethod === "Pay on Pickup") {
           {/* BUTTON */}
           <button
             type="submit"
-            disabled={loading || items.length === 0}
+            disabled={loading || items.length === 0 || cardPaymentBelowMinimum}
             className="block w-full text-center bg-brand-blue text-blue py-4 rounded-lg font-extrabold shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
           >
 {loading

@@ -7,6 +7,7 @@ import { getDeliveryFee } from '@/lib/delivery'
 import { randomUUID } from 'crypto'
 
 const MAX_BANK_SLIP_SIZE = 5 * 1024 * 1024
+const CARD_PAYMENT_METHODS = ['Visa', 'MasterCard', 'Mada']
 const BANK_SLIP_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -213,6 +214,16 @@ export async function processCheckout(items: any[], formData: FormData) {
 
   const vat = (subtotal + deliveryFee) * 0.15
   const total = subtotal + deliveryFee + vat
+
+  if (
+    CARD_PAYMENT_METHODS.includes(paymentMethod) &&
+    Math.round(total * 100) < 100
+  ) {
+    return {
+      error:
+        'The minimum card payment is SAR 1. Please increase the quantity or add another product.',
+    }
+  }
 
   // =========================
   // 🧾 CREATE ORDER
