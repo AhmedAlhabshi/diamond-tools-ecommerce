@@ -235,11 +235,13 @@ const cheapestVariant = purchasableVariants.length > 0
   {productName}
 </h3>
 
+<div className="min-h-4">
 {product.made_in && (
   <p className="text-xs text-gray-500 mt-1">
     {isArabic ? "بلد الصنع:" : "Made in:"} {product.made_in}
   </p>
 )}
+</div>
 
 <div className="mt-1 transition duration-300">
   <ProductPrice
