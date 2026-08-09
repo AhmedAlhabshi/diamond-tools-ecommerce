@@ -175,6 +175,21 @@ formatted?.sort((a: any, b: any) => {
     return (a.category_sort_order ?? 999) - (b.category_sort_order ?? 999)
   }
 
+  const aBrand = a.brands?.[0]
+  const bBrand = b.brands?.[0]
+  const aBrandOrder = aBrand?.sort_order ?? Number.MAX_SAFE_INTEGER
+  const bBrandOrder = bBrand?.sort_order ?? Number.MAX_SAFE_INTEGER
+
+  if (aBrandOrder !== bBrandOrder) return aBrandOrder - bBrandOrder
+
+  const brandNameComparison = (aBrand?.name ?? "").localeCompare(
+    bBrand?.name ?? "",
+    undefined,
+    { sensitivity: "base" }
+  )
+
+  if (brandNameComparison !== 0) return brandNameComparison
+
   return (
     (a.all_products_sort_order ?? 999) -
     (b.all_products_sort_order ?? 999)
