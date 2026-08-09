@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import CartProvider from '@/components/CartProvider';
 import { Toaster } from "sonner";
 import { Cairo } from 'next/font/google'
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 /* ================= Fonts ================= */
 
@@ -102,6 +103,7 @@ export default async function RootLayout({ children, params }: Props) {
           </CartProvider>
         </NextIntlClientProvider>
       </body>
+      <GoogleAnalytics gaId="G-NYX91YHEKG" />
     </html>
   );
 }
