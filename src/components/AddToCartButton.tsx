@@ -28,9 +28,14 @@ export default function AddToCartButton({
 
   const variants = product.product_variants || []
   const effectiveVariant = variant || (variants.length === 1 ? variants[0] : null)
+  const quoteOnly = product?.quote_only || effectiveVariant?.quote_only
   const requiresVariantSelection = variants.length > 1
 
   const handleAddToCart = () => {
+    if (quoteOnly) {
+      window.dispatchEvent(new Event("open-quote-modal"))
+      return
+    }
     if (requiresVariantSelection && !variant) {
       toast.error(
         isArabic

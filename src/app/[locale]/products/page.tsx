@@ -6,6 +6,7 @@ import AddToCartButton from '@/components/AddToCartButton'
 import { createClient } from "@/utils/supabase/server"
 import ProductPrice from "@/components/product-price"
 import ProductsClient from "@/components/ProductsClient"
+import RequestQuoteButton from "@/components/RequestQuoteButton"
 
 export default async function ProductsPage({
   params,
@@ -195,12 +196,11 @@ export default async function ProductsPage({
       variant={product.variant}
     />
 
-    {user && (
-      <AddToCartButton
-  product={product}
-  redirectToProductOnMissingVariant={true}
-/>
-    )}
+    {product.quote_only || (product.product_variants?.length > 0 && product.product_variants.every((v: any) => v.quote_only)) ? (
+      <RequestQuoteButton className="w-full" />
+    ) : user ? (
+      <AddToCartButton product={product} redirectToProductOnMissingVariant={true} />
+    ) : null}
   </div>
 
 </div>

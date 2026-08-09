@@ -134,12 +134,14 @@ export async function getProducts(options?: {
   const formatted = data?.map((product: any) => {
     const variants = product.product_variants || []
 
+    const purchasableVariants = variants.filter((variant: any) => !variant.quote_only)
+
     const lowestVariant =
-      variants.length > 0
-        ? variants.reduce((min: any, current: any) =>
+      purchasableVariants.length > 0
+        ? purchasableVariants.reduce((min: any, current: any) =>
             current.price < min.price ? current : min
           )
-        : null
+        : variants[0] || null
 
     const mainBrand =
       brands?.find((b: any) => String(b.id) === String(product.brand_id)) ||
@@ -338,6 +340,7 @@ if (orderedImages.length > 0) {
 
     featured: formData.get("featured") === "on",
     best_seller: formData.get("best_seller") === "on",
+    quote_only: formData.get("quote_only") === "on",
 
     images,
   }

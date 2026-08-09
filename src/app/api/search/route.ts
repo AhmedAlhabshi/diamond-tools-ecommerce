@@ -19,13 +19,16 @@ export async function GET(req: Request) {
       name_ar,
       images,
       individual_price,
+      quote_only,
       product_variants (
         id,
-        price
+        price,
+        quote_only
       )
     `)
     .eq("is_active", true)
-    .or(`name_en.ilike.%${q}%,name_ar.ilike.%${q}%`);
+    .or(
+`name_en.ilike.%${q}%,name_ar.ilike.%${q}%`);
 
   if (!all) {
     query = query.limit(5);
@@ -42,7 +45,9 @@ export async function GET(req: Request) {
     let lowestVariant = null;
 
     if (product.product_variants?.length > 0) {
-      lowestVariant = product.product_variants.reduce((min: any, current: any) =>
+      const purchasableVariants = product.product_variants.filter((variant: any) => !variant.quote_only);
+      const variantsToCompare = purchasableVariants.length > 0 ? purchasableVariants : product.product_variants;
+      lowestVariant = variantsToCompare.reduce((min: any, current: any) =>
         current.price < min.price ? current : min
       );
     }

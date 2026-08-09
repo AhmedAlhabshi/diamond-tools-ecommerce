@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 import AddToCartButton from "./AddToCartButton";
 import ProductPrice from "@/components/product-price";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getTranslations } from "next-intl/server";
 
 export default async function RelatedProducts({
@@ -41,7 +42,7 @@ export default async function RelatedProducts({
       .from("products")
       .select(`
         *,
-        product_variants (id, price)
+        product_variants (id, price, quote_only)
       `)
       .in("id", ids);
 
@@ -51,7 +52,7 @@ export default async function RelatedProducts({
       .from("products")
       .select(`
         *,
-        product_variants (id, price)
+        product_variants (id, price, quote_only)
       `)
       .or(`category_id.eq.${categoryId},brand_id.eq.${brandId}`)
       .neq("id", currentProductId)
@@ -80,7 +81,9 @@ export default async function RelatedProducts({
     let lowestVariant = null;
 
     if (product.product_variants?.length > 0) {
-      lowestVariant = product.product_variants.reduce((min: any, current: any) =>
+      const purchasableVariants = product.product_variants.filter((variant: any) => !variant.quote_only);
+      const variantsToCompare = purchasableVariants.length > 0 ? purchasableVariants : product.product_variants;
+      lowestVariant = variantsToCompare.reduce((min: any, current: any) =>
         current.price < min.price ? current : min
       );
     }
@@ -162,9 +165,11 @@ export default async function RelatedProducts({
               variant={product.variant}
             />
 
-            {user && (
+            {product.quote_only || (product.product_variants?.length > 0 && product.product_variants.every((v: any) => v.quote_only)) ? (
+              <RequestQuoteButton className="mt-3 w-full" />
+            ) : user ? (
               <AddToCartButton product={product} />
-            )}
+            ) : null}
 
           </div>
 

@@ -22,13 +22,16 @@ export default function QuickViewModal({ product, open, onClose }: any) {
   const variants = product.product_variants || []
 
   const requiresVariantSelection = variants.length > 1
+  const purchasableVariants = variants.filter((v: any) => !v.quote_only)
+  const quoteOnly = product.quote_only || (variants.length > 0 && purchasableVariants.length === 0)
 
   // ✅ still show cheapest price only for display
+  const variantsToCompare = purchasableVariants.length > 0 ? purchasableVariants : variants
   const cheapestVariant =
-    variants.length > 0
-      ? variants.reduce(
+    variantsToCompare.length > 0
+      ? variantsToCompare.reduce(
           (min: any, v: any) => (v.price < min.price ? v : min),
-          variants[0]
+          variantsToCompare[0]
         )
       : null
 
@@ -37,6 +40,10 @@ export default function QuickViewModal({ product, open, onClose }: any) {
     : ""
 
   const handleAddToCart = () => {
+    if (quoteOnly) {
+      window.dispatchEvent(new Event("open-quote-modal"))
+      return
+    }
     // ✅ If product has variants, force user to choose from product page
     if (requiresVariantSelection) {
       toast.error("Please choose product options first", {
@@ -127,7 +134,7 @@ export default function QuickViewModal({ product, open, onClose }: any) {
                 className="flex items-center justify-center gap-2 border px-6 py-3 rounded-lg hover:bg-gray-50 transition"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>Add to Cart</span>
+                <span>{quoteOnly ? "Request Quote" : "Add to Cart"}</span>
               </button>
 
               <Link

@@ -13,6 +13,7 @@ export default function ProductActions({
   unitLabel,
 }: any) {
   const [qty, setQty] = useState(1)
+  const quoteOnly = product?.quote_only || displayVariant?.quote_only || variant?.quote_only
 
   const price =
     displayVariant?.price ??
@@ -23,22 +24,21 @@ export default function ProductActions({
   return (
     <div className="mt-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <QuantitySelector
-          qty={qty}
-          setQty={setQty}
-          unitLabel={unitLabel}
-        />
+        {!quoteOnly && (
+          <QuantitySelector qty={qty} setQty={setQty} unitLabel={unitLabel} />
+        )}
 
         <div className="text-xl font-bold text-brand-blue whitespace-nowrap">
-          <ProductPrice price={price} />
+          <ProductPrice product={product} variant={displayVariant || variant} price={price} />
         </div>
 
-        <AddToCartButton
-          product={product}
-          variant={variant}
-          quantity={qty}
-          iconOnly
-        />
+        {!quoteOnly ? (
+          <AddToCartButton product={product} variant={variant} quantity={qty} iconOnly />
+        ) : (
+          <button type="button" onClick={() => window.dispatchEvent(new Event("open-quote-modal"))} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+            Request Quote
+          </button>
+        )}
 
         <WishlistButton product={product} iconOnly />
       </div>

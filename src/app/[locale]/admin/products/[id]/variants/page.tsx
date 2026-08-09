@@ -35,6 +35,7 @@ export default function ProductVariantsPage() {
   const [descriptionEn, setDescriptionEn] = useState("")
   const [descriptionAr, setDescriptionAr] = useState("")
   const [price, setPrice] = useState("")
+  const [quoteOnly, setQuoteOnly] = useState(false)
   const [stock, setStock] = useState("")
   const [variantCode, setVariantCode] = useState("")
 
@@ -71,6 +72,7 @@ export default function ProductVariantsPage() {
     setDescriptionEn("")
     setDescriptionAr("")
     setPrice("")
+    setQuoteOnly(false)
     setStock("")
     setEditingId(null)
     setVariantImage("")
@@ -109,7 +111,7 @@ export default function ProductVariantsPage() {
   const handleAddVariant = async () => {
     if (loading) return
 
-    if (!price) {
+    if (!price && !quoteOnly) {
       alert("Price is required")
       return
     }
@@ -179,6 +181,7 @@ export default function ProductVariantsPage() {
       description_en: descriptionEn,
       description_ar: descriptionAr,
       price: Number(price),
+      quote_only: quoteOnly,
       stock: stock ? Number(stock) : 0,
       variant_image: variantImage,
       variant_code: variantCode,
@@ -512,6 +515,11 @@ export default function ProductVariantsPage() {
           className="w-full border p-2 rounded"
         />
 
+        <label className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
+          <input type="checkbox" checked={quoteOnly} onChange={(e) => setQuoteOnly(e.target.checked)} />
+          Request Quote Only for this variant
+        </label>
+
         <input
           placeholder="Stock"
           value={stock}
@@ -651,7 +659,7 @@ export default function ProductVariantsPage() {
                   <td className="p-3">{v.stand || "-"}</td>
 
                   <td className="p-3">
-                    SAR {Number(v.price || 0).toFixed(2)}
+                    {v.quote_only ? "Request Quote" : `SAR ${Number(v.price || 0).toFixed(2)}`}
                   </td>
 
                   <td className="p-3">{v.stock ?? 0}</td>
@@ -700,6 +708,7 @@ export default function ProductVariantsPage() {
                         setDescriptionAr(v.description_ar || "")
                         setVariantCode(v.variant_code || "")
                         setPrice(String(v.price || ""))
+                        setQuoteOnly(Boolean(v.quote_only))
                         setStock(String(v.stock || ""))
                       }}
                       className="text-blue-600 hover:underline mr-3"

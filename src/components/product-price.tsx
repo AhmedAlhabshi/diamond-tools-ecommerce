@@ -5,6 +5,12 @@ export default function ProductPrice({
   size = "lg",
 }: any) {
 
+  const quoteOnly = product?.quote_only || variant?.quote_only
+
+  if (quoteOnly) {
+    return <span className="font-semibold text-blue-600">Request Quote</span>
+  }
+
   // ✅ SAFE PRICE
   const price =
     directPrice ??

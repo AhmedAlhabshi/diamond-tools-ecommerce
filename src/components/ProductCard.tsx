@@ -42,11 +42,14 @@ const inWishlist =
 
   const variants = product.product_variants || []
 
-const cheapestVariant = variants.length > 0
-  ? variants.reduce((min: any, v: any) =>
+const purchasableVariants = variants.filter((v: any) => !v.quote_only)
+const quoteOnly = product.quote_only || (variants.length > 0 && purchasableVariants.length === 0)
+
+const cheapestVariant = purchasableVariants.length > 0
+  ? purchasableVariants.reduce((min: any, v: any) =>
       v.price < min.price ? v : min
-    , variants[0])
-  : null
+    , purchasableVariants[0])
+  : variants[0] || null
 
   
 
@@ -151,6 +154,11 @@ const cheapestVariant = variants.length > 0
   e.preventDefault()
   e.stopPropagation()
 
+  if (quoteOnly) {
+    window.dispatchEvent(new Event("open-quote-modal"))
+    return
+  }
+
   const variants = product.product_variants || []
   const requiresVariantSelection = variants.length > 1
 
@@ -203,7 +211,7 @@ const cheapestVariant = variants.length > 0
             "
           >
             <ShoppingCart className="w-4 h-4"/>
-            {t("add")}
+            {quoteOnly ? "Request Quote" : t("add")}
           </button>
 
         </div>
@@ -250,6 +258,11 @@ const cheapestVariant = variants.length > 0
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
+
+            if (quoteOnly) {
+              window.dispatchEvent(new Event("open-quote-modal"))
+              return
+            }
 
             if (variants.length > 1) {
               toast.error(t("chooseOptions") || "Please choose product options first", {
@@ -305,7 +318,7 @@ const item = cheapestVariant
           "
         >
           <ShoppingCart className="w-4 h-4" />
-          {t("add")}
+          {quoteOnly ? "Request Quote" : t("add")}
         </button>
       </div>
 

@@ -255,7 +255,7 @@ export default function ProductVariantsSelector({
     if (!variants?.length) return null
 
     return [...variants].sort(
-      (a: any, b: any) => Number(a.price) - Number(b.price)
+      (a: any, b: any) => Number(a.quote_only) - Number(b.quote_only) || Number(a.price) - Number(b.price)
     )[0]
   }, [variants])
 
@@ -263,7 +263,7 @@ export default function ProductVariantsSelector({
     if (!filteredVariants?.length) return defaultVariant
 
     return [...filteredVariants].sort(
-      (a: any, b: any) => Number(a.price) - Number(b.price)
+      (a: any, b: any) => Number(a.quote_only) - Number(b.quote_only) || Number(a.price) - Number(b.price)
     )[0]
   }, [filteredVariants, defaultVariant])
 
