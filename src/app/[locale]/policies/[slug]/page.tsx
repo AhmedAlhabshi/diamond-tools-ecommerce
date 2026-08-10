@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, FileText, Mail, MessageSquareText, Phone, RefreshCcw, ShieldCheck, Truck } from 'lucide-react'
-import { Link } from '@/i18n/routing'
+import Link from 'next/link'
 import { getPolicies, getPolicy, POLICY_SLUGS } from '@/lib/policies'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
@@ -10,7 +10,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const policy = getPolicy(locale, slug)
   return policy ? { title: `${policy.title} | Diamond Tools`, description: policy.summary } : {}
 }
-export function generateStaticParams() { return POLICY_SLUGS.map((slug) => ({ slug })) }
+export const dynamicParams = false
+export function generateStaticParams() {
+  return ['ar', 'en'].flatMap((locale) => POLICY_SLUGS.map((slug) => ({ locale, slug })))
+}
 const icons = { rotate: RefreshCcw, truck: Truck, shield: ShieldCheck, file: FileText, message: MessageSquareText }
 
 export default async function PolicyDetailPage({ params }: Props) {
@@ -26,7 +29,7 @@ export default async function PolicyDetailPage({ params }: Props) {
       <section className="relative overflow-hidden bg-slate-950 text-white">
         <div className={`absolute inset-0 bg-gradient-to-br ${policy.accent} opacity-15`} />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16">
-          <Link href="/policies" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"><BackIcon className="h-4 w-4" />{isArabic ? 'العودة إلى مركز السياسات' : 'Back to policy centre'}</Link>
+          <Link href={`/${locale}/policies`} className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"><BackIcon className="h-4 w-4" />{isArabic ? 'العودة إلى مركز السياسات' : 'Back to policy centre'}</Link>
           <div className="mt-8 flex max-w-4xl flex-col gap-6 sm:flex-row sm:items-center">
             <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${policy.accent} shadow-2xl`}><Icon className="h-8 w-8" /></div>
             <div><h1 className="text-3xl font-bold leading-tight sm:text-5xl">{policy.title}</h1><p className="mt-3 max-w-3xl leading-7 text-slate-300">{policy.summary}</p></div>
@@ -40,7 +43,7 @@ export default async function PolicyDetailPage({ params }: Props) {
           <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-wider text-slate-400">{isArabic ? 'كل السياسات' : 'All policies'}</p>
           <nav className="space-y-1">{POLICY_SLUGS.map((itemSlug) => {
             const item = policies[itemSlug]; const ItemIcon = icons[item.icon]; const active = itemSlug === policy.slug
-            return <Link key={itemSlug} href={`/policies/${itemSlug}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${active ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'}`}><ItemIcon className="h-4 w-4 shrink-0" />{item.shortTitle}</Link>
+            return <Link key={itemSlug} href={`/${locale}/policies/${itemSlug}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${active ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'}`}><ItemIcon className="h-4 w-4 shrink-0" />{item.shortTitle}</Link>
           })}</nav>
         </aside>
 

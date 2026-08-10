@@ -4,8 +4,9 @@ import { usePathname, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { Globe2 } from 'lucide-react'
+import { Suspense } from 'react'
 
-export default function LanguageSwitcher() {
+function LanguageSwitcherContent() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
@@ -40,5 +41,12 @@ export default function LanguageSwitcher() {
         {locale === 'ar' ? 'English' : 'العربية'}
       </span>
     </button>
+  )
+}
+export default function LanguageSwitcher() {
+  return (
+    <Suspense fallback={<span className="inline-block h-8 w-24 rounded-full border border-gray-200 bg-white shadow-sm" />}>
+      <LanguageSwitcherContent />
+    </Suspense>
   )
 }
