@@ -112,15 +112,9 @@ export function getPurchasablePrice(product: CatalogProduct): number | null {
 }
 
 export function isInStock(product: CatalogProduct): boolean {
-  const purchasableVariants = (product.product_variants || []).filter(
-    (variant) => !variant.quote_only,
-  )
-
-  if (purchasableVariants.length > 0) {
-    return purchasableVariants.some((variant) => Number(variant.stock) > 0)
-  }
-
-  return Number(product.stock) > 0
+  // Inventory is not synchronized with the physical warehouse. Zero means
+  // "available, quantity not tracked"; -1 is the explicit manual opt-out.
+  return Number(product.stock) !== -1
 }
 
 export function plainText(value: string | null | undefined): string {

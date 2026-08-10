@@ -290,8 +290,8 @@ export default async function AdminProductsPage({
                         Brand: {getBrandName(product.brand_id)}
                       </div>
 
-                      <div className="text-sm text-gray-400 mt-1">
-                        Stock: {product.stock}
+                      <div className={`mt-1 text-sm font-medium ${Number(product.stock) === -1 ? "text-red-600" : "text-emerald-600"}`}>
+                        {Number(product.stock) === -1 ? "Unavailable" : "Available"}
                       </div>
                     </div>
 

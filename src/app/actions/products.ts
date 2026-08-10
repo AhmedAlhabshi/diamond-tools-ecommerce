@@ -332,7 +332,9 @@ if (orderedImages.length > 0) {
     specifications_ar: formData.get("specifications_ar"),
     specifications_en: formData.get("specifications_en"),
 
-    stock: Number(formData.get("stock")) || 0,
+    stock: formData.get("is_available") === "on"
+      ? Math.max(0, Number(formData.get("stock")) || 0)
+      : -1,
 
     brand_id: formData.get("brand_id") || null,
     category_id: formData.get("category_id") || null,

@@ -162,9 +162,12 @@ selectedBrandIds = [],
 
 
 
-      <div>
-        <label>Stock</label>
-        <input name="stock" defaultValue={product.stock} className="w-full border p-2 rounded" />
+      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+        <label className="flex items-start gap-3 font-medium text-slate-900">
+          <input type="checkbox" name="is_available" defaultChecked={Number(product.stock) !== -1} className="mt-1 h-4 w-4 accent-emerald-600" />
+          <span>Available for sale<span className="mt-1 block text-sm font-normal text-slate-600">Controls availability on the store and Google. Quantity is not tracked.</span></span>
+        </label>
+        <input type="hidden" name="stock" value="0" />
       </div>
 
       <div>
