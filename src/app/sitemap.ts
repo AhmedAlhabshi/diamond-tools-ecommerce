@@ -1,12 +1,16 @@
 import type { MetadataRoute } from 'next'
 import { getCatalogProducts, SITE_URL } from '@/lib/catalog-seo'
+import { POLICY_SLUGS } from '@/lib/policies'
 
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getCatalogProducts()
   const locales = ['en', 'ar'] as const
-  const staticPaths = ['', '/products', '/categories', '/brands', '/about', '/contact']
+  const staticPaths = [
+    '', '/products', '/categories', '/brands', '/about', '/contact', '/policies',
+    ...POLICY_SLUGS.map((slug) => `/policies/${slug}`),
+  ]
 
   const staticEntries: MetadataRoute.Sitemap = locales.flatMap((locale) =>
     staticPaths.map((path) => ({

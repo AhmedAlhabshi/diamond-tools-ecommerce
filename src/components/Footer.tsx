@@ -2,6 +2,8 @@
 
 import * as Icons from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
+import { Link } from "@/i18n/routing"
+import { getPolicies, POLICY_SLUGS } from "@/lib/policies"
 
 export default function Footer() {
 
@@ -9,6 +11,7 @@ export default function Footer() {
   const t = useTranslations("Footer")
 
   const isRTL = locale === "ar"
+  const policies = getPolicies(locale)
 
   return (
     <footer className="bg-gray-100 text-slate-700 mt-auto">
@@ -17,7 +20,7 @@ export default function Footer() {
 
 {/* GRID */}
 <div className={`grid 
-  grid-cols-1 sm:grid-cols-2 md:grid-cols-4 
+  grid-cols-1 sm:grid-cols-2 lg:grid-cols-5
   gap-6 md:gap-8 ${
     isRTL ? "text-right" : "text-left"
   }`}>
@@ -88,6 +91,23 @@ export default function Footer() {
             </ul>
           </div>
 
+
+          {/* POLICIES */}
+          <div>
+            <h3 className="text-base md:text-lg font-bold mb-2 md:mb-4 text-slate-900">
+              {locale === "ar" ? "السياسات" : "Policies"}
+            </h3>
+
+            <ul className="space-y-1 md:space-y-2 text-sm">
+              {POLICY_SLUGS.map((slug) => (
+                <li key={slug}>
+                  <Link href={`/policies/${slug}`} className="hover:text-blue-600 transition-colors">
+                    {policies[slug].shortTitle}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
           {/* CONTACT */}
 <div>
   <h3 className="text-base md:text-lg font-bold mb-2 md:mb-4 text-slate-900">
