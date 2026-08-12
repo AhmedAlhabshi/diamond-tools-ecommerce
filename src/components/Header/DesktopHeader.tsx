@@ -72,7 +72,7 @@ export default function DesktopHeader() {
       }
 
       try {
-        const res = await fetch(`/api/search?q=${search}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
         const data = await res.json();
         setResults(data);
         setShowResults(true);

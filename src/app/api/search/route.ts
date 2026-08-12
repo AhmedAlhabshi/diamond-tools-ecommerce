@@ -11,12 +11,53 @@ export async function GET(req: Request) {
 
   const supabase = await createClient();
 
+  const { data: matchingBrands, error: brandSearchError } = await supabase
+    .from("brands")
+    .select("id")
+    .or(`name.ilike.%${q}%,name_ar.ilike.%${q}%`);
+
+  if (brandSearchError) {
+    console.error("Brand search error:", brandSearchError);
+    return NextResponse.json([]);
+  }
+
+  const brandIds = matchingBrands?.map((brand) => brand.id) || [];
+  let brandProductIds: string[] = [];
+
+  if (brandIds.length > 0) {
+    const [primaryBrands, additionalBrands] = await Promise.all([
+      supabase.from("products").select("id").eq("is_active", true).in("brand_id", brandIds),
+      supabase.from("product_brands").select("product_id").in("brand_id", brandIds),
+    ]);
+
+    if (primaryBrands.error || additionalBrands.error) {
+      console.error("Brand product search error:", primaryBrands.error || additionalBrands.error);
+      return NextResponse.json([]);
+    }
+
+    brandProductIds = [
+      ...(primaryBrands.data?.map((product) => product.id) || []),
+      ...(additionalBrands.data?.map((product) => product.product_id) || []),
+    ].filter((id, index, ids) => ids.indexOf(id) === index);
+  }
+
+  const filters = [
+    `name_en.ilike.%${q}%`,
+    `name_ar.ilike.%${q}%`,
+    `product_code.ilike.%${q}%`,
+  ];
+
+  if (brandProductIds.length > 0) {
+    filters.push(`id.in.(${brandProductIds.join(",")})`);
+  }
+
   let query = supabase
     .from("products")
     .select(`
       id,
       name_en,
       name_ar,
+      product_code,
       images,
       individual_price,
       quote_only,
@@ -27,8 +68,7 @@ export async function GET(req: Request) {
       )
     `)
     .eq("is_active", true)
-    .or(
-`name_en.ilike.%${q}%,name_ar.ilike.%${q}%`);
+    .or(filters.join(","));
 
   if (!all) {
     query = query.limit(5);
