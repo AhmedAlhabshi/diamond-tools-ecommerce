@@ -11,6 +11,7 @@ export default function SearchPage() {
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,7 +21,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     const delay = setTimeout(async () => {
-      if (!search.trim()) {
+      if (!search.trim() && !showAll) {
         setResults([]);
         return;
       }
@@ -29,7 +30,9 @@ export default function SearchPage() {
 
       try {
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(search)}&all=true`
+          showAll
+            ? "/api/search?all=true"
+            : `/api/search?q=${encodeURIComponent(search)}&all=true`
         );
         const data = await res.json();
         setResults(data);
@@ -41,10 +44,11 @@ export default function SearchPage() {
     }, 250);
 
     return () => clearTimeout(delay);
-  }, [search]);
+  }, [search, showAll]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowAll(false);
 
     window.history.pushState(
       null,
@@ -63,7 +67,10 @@ export default function SearchPage() {
         <form onSubmit={handleSubmit} className="mb-8 flex gap-3">
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setShowAll(false);
+            }}
             placeholder={locale === "ar" ? "ابحث عن منتج..." : "Search products..."}
             className={`w-full border rounded-lg px-4 py-3 ${
               locale === "ar" ? "text-right" : ""
@@ -72,6 +79,17 @@ export default function SearchPage() {
 
           <button className="bg-blue-600 text-white px-6 rounded-lg font-bold">
             {locale === "ar" ? "بحث" : "Search"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              setShowAll(true);
+              window.history.pushState(null, "", `/${locale}/search?q=`);
+            }}
+            className="bg-blue-600 text-white px-6 rounded-lg font-bold"
+          >
+            {locale === "ar" ? "الكل" : "All"}
           </button>
         </form>
 
