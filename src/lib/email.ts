@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import 'server-only'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -7,6 +8,12 @@ type EmailPayload = {
   to: string[]
   subject: string
   html: string
+}
+
+const pickupBranchEmails: Record<string, string> = {
+  'Alnakheel - Jeddah': 'abdullah.k@diamondtools-est.com',
+  'Albaladiya - Jeddah': 'sharaf@diamondtools-est.com',
+  'Ar Rail - Riyadh': 'faisal@diamondtools-est.com',
 }
 
 function getFromEmail() {
@@ -154,9 +161,15 @@ export async function sendOrderEmails(order: any) {
   const total = formatAmount(order.total)
   const itemsHtml = orderItemsHtml(order.order_items)
   const adminEmail = process.env.ADMIN_EMAIL?.trim()
+  const branchEmail = isPickup
+    ? pickupBranchEmails[String(order.pickup_branch)]
+    : undefined
   const emailJobs: Promise<void>[] = []
+  const internalRecipients = [adminEmail, branchEmail].filter(
+    (email): email is string => Boolean(email)
+  )
 
-  if (adminEmail) {
+  if (internalRecipients.length > 0) {
     const fulfillmentHtml = isPickup
       ? detailRow('Pickup branch', order.pickup_branch)
       : `
@@ -166,12 +179,10 @@ export async function sendOrderEmails(order: any) {
           ${detailRow('Delivery notes', order.delivery_notes || '-')}
         `
 
-    emailJobs.push(
-      sendEmail('Admin order', {
-        from: fromEmail,
-        to: [adminEmail],
-        subject: `New Order #${displayOrderId}`,
-        html: emailLayout(
+    const internalEmail = {
+      from: fromEmail,
+      subject: `New Order #${displayOrderId}`,
+      html: emailLayout(
           `New order #${displayOrderId}`,
           `
             <h1 style="margin:0 0 12px;text-align:center;font-size:28px;color:#0f172a;">
@@ -206,11 +217,23 @@ export async function sendOrderEmails(order: any) {
               <strong style="display:block;margin-top:4px;font-size:22px;">SAR ${total}</strong>
             </div>
           `
-        ),
-      })
-    )
+      ),
+    }
+
+    for (const recipient of internalRecipients) {
+      emailJobs.push(
+        sendEmail('Internal order', {
+          ...internalEmail,
+          to: [recipient],
+        })
+      )
+    }
   } else {
-    console.error('Admin order email skipped: ADMIN_EMAIL is not configured')
+    console.error('Internal order email skipped: no recipient is configured')
+  }
+
+  if (isPickup && !branchEmail) {
+    console.error('Pickup branch email skipped: no email configured for ' + order.pickup_branch)
   }
 
   if (order.email) {
